@@ -7,9 +7,7 @@ class wsmStatistics{
         $this->objDatabase=new wsmDatabase();
     }
     function wsm_addShortCodes(){
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
+		
         add_shortcode( WSM_PREFIX.'_showDayStats', array($this,WSM_PREFIX.'_showDayStats') );
         add_shortcode( WSM_PREFIX.'_showDayStatBox', array($this,WSM_PREFIX.'_showDayStatBox') );
         add_shortcode( WSM_PREFIX.'_showGenStats', array($this,WSM_PREFIX.'_showGenStats') );

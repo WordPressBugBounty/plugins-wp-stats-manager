@@ -1,10 +1,11 @@
 ﻿=== WP Visitor Statistics (Real Time Traffic) ===
 Contributors: osamaesh
-Tags: online, visitor traffic, visitor statistics, real time statistics, visitors plugin, online counter, count visitor, histats, analytics, statistics, counter, tracking, reports, wassup, geolocation, online users, spider, tracker, pageviews, stats, maxmind, statistics, statpress, power stats, hit, GeoIP, Geo locations, analytics dashboard, visits, statistics, stats, visitors, chart, browser, blog, today, yesterday, week, month, wp Statistics, year, post, page, sidebar, summary, feedburner, hits, pagerank, google analytics, alexa, GDPR, live counter, traffic
-Requires at least: 3.0
-Tested up to: 6.5.5
-Stable tag: 6.9.6
+Tags: analytics, google analytics, insights, stats, visitors
+Requires at least: 5.0
+Tested up to: 6.6.2
+Stable tag: 7.1
 License: GPL3
+
 This plugin will help you to track your visitors & visits, browsers, operating systems, GEO locations and much more, easy to install and working fine.
 
 == Description ==
@@ -80,6 +81,9 @@ Thanks!
 
 
 == Changelog ==
+
+= 7.1 =
+Bug fixing when giving access to the editor users
 
 = 6.9.6 =
 1. Styling
