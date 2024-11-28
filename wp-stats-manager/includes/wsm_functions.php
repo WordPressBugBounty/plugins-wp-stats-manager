@@ -2,6 +2,22 @@
 if ( ! defined( 'ABSPATH' ) ) exit; 
 
 
+function wsm_free_customizer_admin_inline_styles() {
+    // Check if we are in the Customizer page
+    if (is_customize_preview()) {
+        ?>
+        <style>
+            .accordion-section-title button.accordion-trigger {
+                /* Add your desired styles for Customizer accordion button here */
+               height:auto !important
+			}
+        </style>
+        <?php
+    }
+}
+add_action('customize_controls_print_styles', 'wsm_free_customizer_admin_inline_styles');
+
+
 
 function wsm_free_top_bar_enqueue_style() {
 
