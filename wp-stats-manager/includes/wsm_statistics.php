@@ -286,6 +286,15 @@ class wsmStatistics{
             'width' =>'1140px',
             'height' =>'400px'
             ), $atts, WSM_PREFIX.'_showCurrentStats');
+			
+			
+			// Sanitize attributes to prevent XSS
+			$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
+			$atts['width'] = esc_attr($atts['width']); // Escape width attribute
+			$atts['height'] = esc_attr($atts['height']); // Escape height attribute
+
+
+
         $arrChartStats=$this->objDatabase->fnGetCurrentDayHourlyStats();
         $tDate=wsmGetDateByInterval('-1 days','d');
         $p7Date=wsmGetDateByInterval('-7 days','d');
