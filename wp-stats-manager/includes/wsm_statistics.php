@@ -51,10 +51,16 @@ class wsmStatistics{
     function wsm_showDayStats($atts, $content=""){
         global $wsmAdminJavaScript;
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'title' => __('Today','wp-stats-manager'),
             'date' => wsmGetCurrentDateByTimeZone('Y-m-d')
             ), $atts,WSM_PREFIX.'_showDayStats');
+			
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
         $todayPageViews=$this->objDatabase->fnGetTotalPageViewCount('Today');
         $todayVisitors=$this->objDatabase->fnGetTotalVisitorsCount('Today');
         $onlineVisitors=$this->objDatabase->fnGetTotalVisitorsCount('Online');
@@ -86,9 +92,15 @@ class wsmStatistics{
     function wsm_showGenStats($atts, $content=""){
         global $wsmAdminJavaScript;
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'title' => __('Today','wp-stats-manager')
             ), $atts, WSM_PREFIX.'_showGenStats');
+			
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
         $totalPageViews=$this->objDatabase->fnGetTotalPageViewCount();
         $totalVisitors=$this->objDatabase->fnGetTotalVisitorsCount();
         $onlineVisitors=$this->objDatabase->fnGetTotalVisitorsCount('Online');
@@ -113,10 +125,16 @@ class wsmStatistics{
     function wsm_showLastDaysStats($atts, $content=""){
         global $wsmAdminJavaScript;
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'title' => __('Today','wp-stats-manager'),
             'days' =>''
             ), $atts, WSM_PREFIX.'_showLastDaysStats');
+			
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
         $nDays=$atts['days'];
         if($nDays=='' || $nDays<1){
             $oDays=get_option(WSM_PREFIX.'ChartDays');
@@ -142,9 +160,15 @@ class wsmStatistics{
 	
     function wsm_showForeCast($atts, $content=""){
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'title' => __('Forecast','wp-stats-manager')
             ), $atts, WSM_PREFIX.'_showForeCast');
+		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
         $nDays=get_option(WSM_PREFIX.'ChartDays');
         $nDays=($nDays!='' && $nDays>0) ?$nDays:30;        
         $arrForeCast=$this->objDatabase->fnGetTodaysForeCastData();       
@@ -192,12 +216,17 @@ class wsmStatistics{
 
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
         global $wsmAdminJavaScript;
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'title' => __('GeoLocation','wp-stats-manager'),
             'width' =>'400px',
             'height' =>'200px',
             'id'=>'showGeoLocationChart',
             ), $atts, WSM_PREFIX.'_showGeoLocation');
+			$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
         //$arrStats=$this->objDatabase->fnGetTotalPageViewsByCountries(10);
         $arrStats=$this->objDatabase->fnGetTotalVisitorsByCountries(10);
         $html='<div id="pieGeolocation"></div>';
@@ -280,14 +309,18 @@ class wsmStatistics{
     function wsm_showCurrentStats($atts, $content=""){
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
         global $wsmAdminJavaScript;
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'title' => __('Get Current Stats','wp-stats-manager'),
             'id' =>'barStacked',
             'width' =>'1140px',
             'height' =>'400px'
             ), $atts, WSM_PREFIX.'_showCurrentStats');
 			
-			
+			$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 			// Sanitize attributes to prevent XSS
 			$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
 			$atts['width'] = esc_attr($atts['width']); // Escape width attribute
@@ -514,7 +547,11 @@ class wsmStatistics{
         global $wsmAdminJavaScript;
         $nDays=get_option(WSM_PREFIX.'ChartDays');
         $nDays=($nDays!='' && $nDays>0) ?$nDays:30;
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'days' =>$nDays,
             'title' => __('Get Current Stats','wp-stats-manager'),
             'id'=>'lastDaysChart',
@@ -700,6 +737,8 @@ class wsmStatistics{
             'title' => __('Get Current Stats','wp-stats-manager'),
             'id'=>'recentVisitedPages'
             ), $atts, WSM_PREFIX.'_showRecentVisitedPages');
+			
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $html='<div id="'.WSM_PREFIX.'_'.sanitize_key($atts['id']).'" class="wsmTableContainer">';
         $arrPages=$this->objDatabase->fnGetRecentVisitedPages($atts['limit']);
         $html.='<table class="wsmTableStriped">';
@@ -757,6 +796,8 @@ class wsmStatistics{
             'title' => __('Get Current Stats','wp-stats-manager'),
             'id'=>'recentVisitedPagesdetailsList'
             ), $atts, WSM_PREFIX.'_showRecentVisitedPages');
+		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $html='<div id="'.WSM_PREFIX.'_'.sanitize_key($atts['id']).'" class="wsmTableContainer">';
         $arrPages=$this->objDatabase->fnGetRecentVisitedPages($atts['limit']);
         $html.='<table class="wsmSpanTable">';
@@ -815,6 +856,8 @@ class wsmStatistics{
             'title' => __('Get Popular Pages','wp-stats-manager'),
             'id'=>'popularPagesList'
             ), $atts, WSM_PREFIX.'_showPopularPages');
+		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $html='<div id="'.WSM_PREFIX.'_'.sanitize_key($atts['id']).'" class="wsmTableContainer">';
         $arrPages=$this->objDatabase->fnGetPopularPages($atts['limit']);
         $html.='<table class="wsmTableStriped">';
@@ -844,6 +887,8 @@ class wsmStatistics{
             'title' => __('Get Popular Referrers','wp-stats-manager'),
             'id'=>'popularReferrersList'
             ), $atts, WSM_PREFIX.'_showPopularReferrers');
+		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $html='<div id="'.WSM_PREFIX.'_'.sanitize_key($atts['id']).'" class="wsmTableContainer">';
         $arrPages=$this->objDatabase->fnGetPopularReferrers($atts['limit']);
         $flagRef=true;
@@ -878,6 +923,8 @@ class wsmStatistics{
             'title' => __('Get Most Active Visitors','wp-stats-manager'),
             'id'=>'mostActiveVisitorsList'
             ), $atts, WSM_PREFIX.'_showMostActiveVisitors');
+		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $html='<div id="'.WSM_PREFIX.'_'.sanitize_key($atts['id']).'" class="wsmTableContainer">';
         $arrPages=$this->objDatabase->fnGetMostActiveVisitors($atts['limit']);
 
@@ -922,6 +969,8 @@ class wsmStatistics{
             'title' => __('Get Most Active Visitors','wp-stats-manager'),
             'id'=>'mostActiveVisitorsDetailsList'
             ), $atts, WSM_PREFIX.'_showMostActiveVisitors');
+		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $html='<div id="'.WSM_PREFIX.'_'.sanitize_key($atts['id']).'" class="wsmTableContainer">';
         $arrPages=$this->objDatabase->fnGetMostActiveVisitors();
         $arrVisitIds=wp_list_pluck($arrPages,'visitId');
@@ -989,6 +1038,7 @@ class wsmStatistics{
             'id'=>'mostActiveVisitorsGeoLocation'
             ), $atts, WSM_PREFIX.'_showMostActiveVisitorsGeo');
         
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $arrPages=$this->objDatabase->fnGetMostActiveVisitors();        
         $arrVisitIds=wp_list_pluck($arrPages,'visitId');
         $arrExist=array();
@@ -1116,6 +1166,9 @@ class wsmStatistics{
             'title' => __('Country','wp-stats-manager'),
             'id'=>'visitorsCountListByCountry'
             ), $atts, WSM_PREFIX.'_showActiveVisitorsByCountry');
+			
+			$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
+			
         $html='<div id="'.WSM_PREFIX.'_'.sanitize_key($atts['id']).'" class="wsmTableContainer">';
         $arrPages=$this->objDatabase->fnGetActiveVisitorsCount('country');        
         $html.='<table class="wsmTableStriped">';
@@ -1140,6 +1193,8 @@ class wsmStatistics{
             'title' => __('City','wp-stats-manager'),
             'id'=>'visitorsCountListByCity'
             ), $atts, WSM_PREFIX.'_showActiveVisitorsByCity');
+			
+			$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $html='<div id="'.WSM_PREFIX.'_'.sanitize_key($atts['id']).'" class="wsmTableContainer">';
         $arrPages=$this->objDatabase->fnGetActiveVisitorsCount('city');        
         $html.='<table class="wsmTableStriped">';
@@ -1166,6 +1221,8 @@ class wsmStatistics{
             'source' => '',
             'id'=>'filterStatBox'
         ), $atts, WSM_PREFIX.'_showStatFilterBox');
+		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $arrHide=array();
         $arrTabs=array('Hourly','Daily','Monthly');
         if($atts['hide']!=''){
@@ -1448,7 +1505,11 @@ class wsmStatistics{
     function wsm_showDayStatBox($atts, $content=""){
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
         $arrPostData=wsmSanitizeFilteredPostData();
-        /*$atts = shortcode_atts( array(
+        /*
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '_dayStatBox',
             'title' => __('Daily Stats','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -1469,7 +1530,11 @@ class wsmStatistics{
 		$first = sanitize_text_field($arrPostData[$condition]['first']);
 		$second = sanitize_text_field($arrPostData[$condition]['second']);
 
-		$atts = shortcode_atts( array(
+		
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
 			'id' => $id,
 			'title' => $title,
 			'type' => $type,
@@ -1479,6 +1544,8 @@ class wsmStatistics{
 			'first' => $first,
 			'second' => $second
 		), $atts,WSM_PREFIX.'_showDayStatBox');
+		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 
         $pageViews=$visitors=$firstTimeVisitors=$pvpv=$nvr=0;
         $CpageViews=$Cvisitors=$CfirstTimeVisitors=$Cpvpv=$Cnvr=0;
@@ -1695,7 +1762,11 @@ class wsmStatistics{
     function wsm_showTrafficStatsList($atts, $content=""){
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
         $arrPostData=wsmSanitizeFilteredPostData();
-      /*  $atts = shortcode_atts( array(
+      /*  
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'title' => __('Show Stats','wp-stats-manager'),
             'id' =>'TableTrafficStats',           
             'type' => $arrPostData['filterType'],
@@ -1715,7 +1786,11 @@ class wsmStatistics{
 			$first = sanitize_text_field($arrPostData[$condition]['first']);
 			$second = sanitize_text_field($arrPostData[$condition]['second']);
 
-			$atts = shortcode_atts( array(
+			
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
 				'title' => $title,
 				'id' => $id,
 				'type' => $type,
@@ -1726,7 +1801,7 @@ class wsmStatistics{
 				'second' => $second
 			), $atts, WSM_PREFIX.'_showTrafficStatsList');
 
-
+			$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 
             $arrChartStats=array();            
             $arrChartStatSecond=array();
@@ -2077,7 +2152,11 @@ class wsmStatistics{
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
        global $wsmAdminJavaScript;
         $arrPostData=wsmSanitizeFilteredPostData();
-      /*  $atts = shortcode_atts( array(
+      /*  
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'title' => __('Get Current Stats','wp-stats-manager'),
             'id' =>'barGrouped',
             'width' =>'1140px',
@@ -2101,7 +2180,11 @@ class wsmStatistics{
             $first = sanitize_text_field($arrPostData[$condition]['first']);
             $second = sanitize_text_field($arrPostData[$condition]['second']);
             
-            $atts = shortcode_atts( array(
+            
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
                 'title' => $title,
                 'id' => $id,
                 'width' => $width,
@@ -2113,7 +2196,8 @@ class wsmStatistics{
                 'first' => $first,
                 'second' => $second
             ), $atts, WSM_PREFIX.'_showCurrentStats');
-            
+           
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $arrChartStats=array();            
         $arrChartStatSecond=array();   
         $yMax=0;         
@@ -2373,7 +2457,11 @@ class wsmStatistics{
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
         $arrPostData=wsmSanitizeFilteredPostData();
         global $wsmAdminJavaScript;
-       /* $atts = shortcode_atts( array(
+       /* 
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '_refferStatsBox',
             'title' => __('Daily Stats','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -2395,7 +2483,11 @@ class wsmStatistics{
         $second = sanitize_text_field($arrPostData[$condition]['second']);
         $searchengine = sanitize_text_field($searchengine);
 
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => $id,
             'title' => $title,
             'type' => $type,
@@ -2407,7 +2499,7 @@ class wsmStatistics{
             'searchengine' => $searchengine
         ), $atts, WSM_PREFIX.'_showRefferStatsBox');
 
-
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $pageViews=$visitors=$firstTimeVisitors=$pvpv=0;
         $CpageViews=$Cvisitors=$CfirstTimeVisitors=$Cpvpv=0;
         $CPpageViews=$CPvisitors=$CPfirstTimeVisitors=$CPpvpv=0;
@@ -2795,7 +2887,11 @@ class wsmStatistics{
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
         $arrPostData=wsmSanitizeFilteredPostData();
         global $wsmAdminJavaScript;
-      /*  $atts = shortcode_atts( array(
+      /*  
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '_topRefferStatsList',
             'title' => __('Top Referrer Sites','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -2806,7 +2902,7 @@ class wsmStatistics{
             'second' =>  $arrPostData[$arrPostData['filterWay']]['second']
         ), $atts, WSM_PREFIX.'_showTopReferrerList');*/
 
-
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $id = sanitize_key('_topRefferStatsList');
         $title = esc_html(__('Top Referrer Sites','wp-stats-manager'));
         $type = sanitize_key($arrPostData['filterType']);
@@ -2816,7 +2912,11 @@ class wsmStatistics{
         $first = sanitize_text_field($arrPostData[$condition]['first']);
         $second = sanitize_text_field($arrPostData[$condition]['second']);
         
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => $id,
             'title' => $title,
             'type' => $type,
@@ -2827,7 +2927,7 @@ class wsmStatistics{
             'second' => $second
         ), $atts, WSM_PREFIX.'_showTopReferrerList');
         
-
+$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 
         $arrReferrerList=array();
         $arrReferrerListSecond=array();
@@ -2908,7 +3008,11 @@ class wsmStatistics{
         $arrRequestData=wsmFnGetFilterPostData();
         $arrPostData=wsmSanitizeFilteredPostData();
         global $wsmAdminJavaScript;
-       /* $atts = shortcode_atts( array(
+       /* 
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '_topRefferStatsList',
             'title' => __('Top Referrer Sites','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -2930,7 +3034,11 @@ class wsmStatistics{
         $second = sanitize_text_field($arrPostData[$condition]['second']);
         $searchengine = sanitize_text_field($searchengine);
 
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => $id,
             'title' => $title,
             'type' => $type,
@@ -2942,7 +3050,7 @@ class wsmStatistics{
             'searchengine' => $searchengine
         ), $atts, WSM_PREFIX.'_showTopReferrerList');
 
-        
+        $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $arrReferrerList=array();
         $arrReferrerListSecond=array();
         $arrYesterDayReferrerList=array();
@@ -3148,7 +3256,11 @@ class wsmStatistics{
 		/*add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
         $arrRequestData=wsmFnGetFilterPostData();
         $arrPostData=wsmSanitizeFilteredPostData();
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '_topRefferStatsList',
             'title' => __('Top Referrer Sites','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -3236,7 +3348,11 @@ class wsmStatistics{
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
         $arrRequestData=wsmFnGetFilterPostData();
         $arrPostData=wsmSanitizeFilteredPostData();
-       /* $atts = shortcode_atts( array(
+       /* 
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '_topRefferStatsList',
             'title' => __('Top Referrer Sites','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -3258,7 +3374,11 @@ class wsmStatistics{
         $second = sanitize_text_field($arrPostData[$condition]['second']);
         $searchengine = sanitize_text_field($searchengine);
 
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => $id,
             'title' => $title,
             'type' => $type,
@@ -3269,7 +3389,7 @@ class wsmStatistics{
             'second' => $second,
             'searchengine' => $searchengine
         ), $atts, WSM_PREFIX.'_showTopReferrerList');
-
+$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 
 
         $currentPage=isset($_GET['wsmp'])&&$_GET['wsmp']!=''?sanitize_text_field($_GET['wsmp']):1;
@@ -3441,7 +3561,11 @@ class wsmStatistics{
 		add_action('wp_footer', array('wsmInitPlugin',WSM_PREFIX. '_commonScript'));
 		$arrRequestData=wsmFnGetFilterPostData();
         $arrPostData=wsmSanitizeFilteredPostData();
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '_topRefferStatsList',
             'display' => '',
             'title' => __('Top Referrer Sites','wp-stats-manager'),
@@ -3617,7 +3741,11 @@ class wsmStatistics{
         $arrRequestData=wsmFnGetFilterPostData();
         $arrPostData=wsmSanitizeFilteredPostData();
 		
-        /*$atts = shortcode_atts( array(
+        /*
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '_topRefferStatsList',
             'title' => __('Top Referrer Sites','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -3639,7 +3767,11 @@ class wsmStatistics{
         $second = sanitize_text_field($arrPostData[$condition]['second']);
         $searchengine = sanitize_text_field($searchengine);
 
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => $id,
             'title' => $title,
             'type' => $type,
@@ -3651,7 +3783,7 @@ class wsmStatistics{
             'searchengine' => $searchengine
         ), $atts, WSM_PREFIX.'_showTopReferrerList');
 
-
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $currentPage=isset($_GET['wsmp'])&&$_GET['wsmp']!=''?sanitize_text_field($_GET['wsmp']):1;
         $arrAtts['currentPage']=$currentPage;        
       	$arrAtts['searchengine'] = $atts['searchengine']; 
@@ -3743,7 +3875,11 @@ class wsmStatistics{
         $arrPostData=wsmSanitizeFilteredPostData();
 
         global $wsmAdminJavaScript;
-       /* $atts = shortcode_atts( array(
+       /* 
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '__geoLocation',
             'title' => __('Geo Location','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -3763,7 +3899,11 @@ class wsmStatistics{
         $first = sanitize_text_field($arrPostData[$condition]['first']);
         $second = sanitize_text_field($arrPostData[$condition]['second']);
 
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => $id,
             'title' => $title,
             'type' => $type,
@@ -3773,7 +3913,7 @@ class wsmStatistics{
             'first' => $first,
             'second' => $second,
         ), $atts, WSM_PREFIX.'_showTopReferrerList');
-
+$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 		
 		$condition=$atts['condition'];
         $arrAtts = array();
@@ -3871,7 +4011,11 @@ class wsmStatistics{
         $arrPostData=wsmSanitizeFilteredPostData();
 		$totalGeoLocationDetails2 = array();
         global $wsmAdminJavaScript;
-        /*$atts = shortcode_atts( array(
+        /*
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '__geoLocation',
             'title' => __('Geo Location','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -3891,7 +4035,11 @@ class wsmStatistics{
         $first = sanitize_text_field($arrPostData[$condition]['first']);
         $second = sanitize_text_field($arrPostData[$condition]['second']);
 
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => $id,
             'title' => $title,
             'type' => $type,
@@ -3902,7 +4050,7 @@ class wsmStatistics{
             'second' => $second,
         ), $atts, WSM_PREFIX.'_showTopReferrerList');
 
-		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 		$condition=$atts['condition'];
 		$locationType = isset( $_GET['location'] ) ? sanitize_text_field($_GET['location']) : '';
 
@@ -4096,7 +4244,11 @@ class wsmStatistics{
         $arrPostData=wsmSanitizeFilteredPostData();
 		$totalGeoLocationDetails2 = array();
 		
-        /*$atts = shortcode_atts( array(
+        /*
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '__contentByURL',
             'title' => __('Content by URL','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -4107,6 +4259,7 @@ class wsmStatistics{
             'second' =>  $arrPostData[$arrPostData['filterWay']]['second'],
         ), $atts, WSM_PREFIX.'_showContentByURL');	*/
         
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $id = sanitize_key('__contentByURL');
         $title = esc_html(__('Content by URL','wp-stats-manager'));
         $type = sanitize_text_field($arrPostData['filterType']);
@@ -4116,7 +4269,11 @@ class wsmStatistics{
         $first = sanitize_text_field($arrPostData[$condition]['first']);
         $second = sanitize_text_field($arrPostData[$condition]['second']);
 
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => $id,
             'title' => $title,
             'type' => $type,
@@ -4127,7 +4284,7 @@ class wsmStatistics{
             'second' => $second,
         ), $atts, WSM_PREFIX.'_showContentByURL');
 
-		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 		$condition=$atts['condition'];
 
         $arrAtts = array();
@@ -4268,7 +4425,11 @@ class wsmStatistics{
         $arrPostData=wsmSanitizeFilteredPostData();
 		$totalGeoLocationDetails2 = array();
 		
-       /* $atts = shortcode_atts( array(
+       /* 
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '__contentByURL',
             'title' => __('Content by URL','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -4281,7 +4442,11 @@ class wsmStatistics{
             'second' =>  $arrPostData[$arrPostData['filterWay']]['second'],
         ), $atts, WSM_PREFIX.'_showContentByURL');		*/
 
-        $atts = shortcode_atts( array(
+        
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '__contentByURL',
             'title' => __('Content by URL','wp-stats-manager'),
             'type' => sanitize_text_field($arrPostData['filterType']),
@@ -4294,6 +4459,7 @@ class wsmStatistics{
             'second' =>  sanitize_text_field($arrPostData[$arrPostData['filterWay']]['second']),
         ), $atts, WSM_PREFIX.'_showContentByURL');
 		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 		$condition=$atts['condition'];
 		if( $atts['content'] == 'byTitle' ){
 			$_GET['subPage'] = 'byTitle'; 
@@ -4572,7 +4738,11 @@ class wsmStatistics{
         $arrRequestData=wsmFnGetFilterPostData();
         $arrPostData=wsmSanitizeFilteredPostData();
 		
-        /*$atts = shortcode_atts( array(
+        /*
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(		
             'id' => '__contentByURL',
             'title' => __('Content by URL','wp-stats-manager'),
             'type' => $arrPostData['filterType'],
@@ -4584,7 +4754,13 @@ class wsmStatistics{
         ), $atts, WSM_PREFIX.'_showContentByURL');		*/
 
 
-        $atts = shortcode_atts( array(
+        
+		
+ 
+		if (!current_user_can('manage_options')) {
+			return 'You do not have permission to view this content.'; // Display message or return empty
+		}
+ $atts = shortcode_atts( array(				
             'id' => '__contentByURL',
             'title' => __('Content by URL','wp-stats-manager'),
             'type' => sanitize_text_field($arrPostData['filterType']),
@@ -4594,6 +4770,8 @@ class wsmStatistics{
             'first' =>  sanitize_text_field($arrPostData[$arrPostData['filterWay']]['first']),
             'second' =>  sanitize_text_field($arrPostData[$arrPostData['filterWay']]['second']),
         ), $atts, WSM_PREFIX.'_showContentByURL');
+		
+		$atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 		
 		$condition=$atts['condition'];
 

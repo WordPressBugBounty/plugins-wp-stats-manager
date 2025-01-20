@@ -20,14 +20,7 @@ class wsmAdminInterface{
 	
 	function fnPrintTitle($title){
         return '<h1 class="wsmHead">'.WSM_NAME.'</h1>'.$this->fnPrintHeader($title).'
-		<p>
 		
-			<div id="wsm_subscribe" class="notice notice-info is-dismissible" > 
-				<p>
-				<input type="text" value="'.get_bloginfo("admin_email").'" name="WSMsub_email" id="WSMsub_email" />
-				<button type="button" class="btn btn-primary wsm_subscribe_btn" onclick="wsm_open_subscribe_page()" >'.__("Subscribe",'wp-stats-manager').'</button> '.__("to get latest news and updates, plugin recommendations & help, promotional email with",'wp-stats-manager').' <b style="color:red">'.__("discount codes :)" ,'wp-stats-manager').'</b> '.__("or" ,'wp-stats-manager').' <a href="#" onclick="wsm_dismiss_notice()">'.__('Dismiss this notice','wp-stats-manager').'</a>
-				</p>
-			</div></p>
 			<script>
 function wsm_dismiss_notice()
 				{
