@@ -40,7 +40,7 @@ class wsmInitPlugin{
 		add_action( 'wp_enqueue_scripts',  array('wsmInitPlugin',WSM_PREFIX.'_front_script_style'));
 		add_action( 'admin_footer', array( 'wsmInitPlugin',WSM_PREFIX.'_setting_popup_func'));
 		add_filter('script_loader_tag', WSM_PREFIX.'_add_async_defer_attribute', 10, 2);
-		update_option(WSM_PREFIX.'KeepData',1);
+		//update_option(WSM_PREFIX.'KeepData',1);
 		
 		add_action('admin_bar_menu', 'wsm_free_add_items',  40);
 		add_action('wp_enqueue_scripts', 'wsm_free_top_bar_enqueue_style');
@@ -1215,7 +1215,9 @@ class wsmInitPlugin{
 		
 		$result = array();
 		try{
-		if( filter_var( $address, FILTER_VALIDATE_IP ) ){
+		// Validate both IPv4 and IPv6 addresses
+    if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) || filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+
 			$ipAddresses = get_option('exclusion_ip_address_list');
 			if( !isset($ipAddresses) || !array_key_exists( $address, $ipAddresses ) ){
 				$ipAddresses[$address] = 1;
@@ -1230,7 +1232,7 @@ class wsmInitPlugin{
 			}
 		}else{
 			$result['status'] = 0;
-			$result['message'] = __('Entered ip address is already exist in systems.','wp-stats-manager');
+			$result['message'] = __('Invalid IP Address','wp-stats-manager');
 		}
 		}catch(Exception $e){
 			$result['status'] = 0;
@@ -1970,6 +1972,7 @@ class wsmInitPlugin{
         }
     }
     static function wsmCreateDatabaseSchema(){
+		update_option(WSM_PREFIX.'KeepData',1);
         $arrTables=array();
         $sql='CREATE TABLE IF NOT EXISTS '.self::$tablePrefix.'_url_log (
           id int(10) UNSIGNED NOT NULL AUTO_INCREMENT,

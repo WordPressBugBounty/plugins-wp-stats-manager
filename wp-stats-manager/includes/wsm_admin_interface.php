@@ -64,6 +64,10 @@ function wsm_dismiss_notice()
 	
     function fnPrintHeader($active=""){
         global $wsmRequestArray,$wsmAdminJavaScript;
+		
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         
         $current=isset($wsmRequestArray['subPage']) && $wsmRequestArray['subPage']!=''?$wsmRequestArray['subPage']:'';
          
@@ -210,6 +214,9 @@ function wsm_dismiss_notice()
                   //$color = get_user_meta(get_current_user_id(), 'admin_color', true);
     }
     function fnShowTodayStats(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showDayStats]");
         echo  do_shortcode("[".WSM_PREFIX."_showCurrentStats]");
        // echo  do_shortcode("[".WSM_PREFIX."_showForeCast]");
@@ -217,34 +224,64 @@ function wsm_dismiss_notice()
     }
     
     function fnShowDailyStatBox($post, $arrParam){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo do_shortcode("[".WSM_PREFIX."_showDayStatBox]");       
     }
     function fnStatFilterBox(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showStatFilterBox]"); 
     }
     function fnStatFilterBox4Referral(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showStatFilterBox hide='Monthly' source='Referral']"); 
     }
     function fnShowTopReferrerSites(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showTopReferrerList searchengine='".( isset($_REQUEST['subPage']) && $_REQUEST['subPage'] == 'SearchEngines' ? 1 : '' )."' ]"); 
     }
 	function fnStatsSearchKeywords(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		echo do_shortcode("[".WSM_PREFIX."_showStatKeywords]");
 	}
 	function fnShowOsStatBox(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		echo do_shortcode("[".WSM_PREFIX."_showVisitorsDetailGraph]");
 	}
 	function fnShowVisitorsDetails(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		echo do_shortcode("[".WSM_PREFIX."_showVisitorsDetail]");
 	}
 	function fnShowGeoLocationStats(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		echo do_shortcode("[".WSM_PREFIX."_showGeoLocationGraph]");
 	}
 	function fnShowGeoLocationDetails(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		echo do_shortcode("[".WSM_PREFIX."_showGeoLocationDetails]");
 	}
 	
     function fnShowDaysStatsGraph(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         $arrPostData=wsmSanitizeFilteredPostData();
         if($arrPostData['filterWay']!='Range'){
             echo  do_shortcode("[".WSM_PREFIX."_showDayStatsGraph]");
@@ -252,69 +289,132 @@ function wsm_dismiss_notice()
         echo  do_shortcode("[".WSM_PREFIX."_showTrafficStatsList]");
     }
     function fnShowGenStats(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showGenStats]");
         //echo $html;
     }
     function fnShowLastDaysStats(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showLastDaysStats]");
         echo  do_shortcode("[".WSM_PREFIX."_showLastDaysStatsChart id='LastDaysChart2']");
         //echo $html;
     }
     function fnShowGeoLocationChart(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showGeoLocation]");
     }
     function fnShowRecentVisitedPages(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showRecentVisitedPages]");
     }
     function fnShowRecentVisitedPagesDetails(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showRecentVisitedPagesDetails]");
     }
     function fnShowPopularPages(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showPopularPages]");
     }
     function fnShowPopularReferrers(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showPopularReferrers]");
     }
     function fnShowMostActiveVisitors(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showMostActiveVisitors]");
     }
     function fnShowMostActiveVisitorsDetails(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showMostActiveVisitorsDetails]");
     }
     function fnShowMostActiveVisitorsGeo(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showMostActiveVisitorsGeo]");
     }
     function fnShowMostActiveVisitorsGeoDetails(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  do_shortcode("[".WSM_PREFIX."_showMostActiveVisitorsGeo height='450px' zoom='2']");       
     }
     function fnShowActiveVistiorsCountByCountry(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
          echo  do_shortcode("[".WSM_PREFIX."_showActiveVisitorsByCountry]");
     }
     function fnShowActiveVistiorsCountByCity(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
          echo  do_shortcode("[".WSM_PREFIX."_showActiveVisitorsByCity]");
     }
     function fnShowReffererStatBox(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
          echo  do_shortcode("[".WSM_PREFIX."_showRefferStatsBox searchengine='".( isset($_REQUEST['subPage']) && $_REQUEST['subPage'] == 'SearchEngines' ? 1 : '' )."' ]");
     }
     function fnShowReffererSearchEngineStatBox(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
          echo  do_shortcode("[".WSM_PREFIX."_showRefferStatsBox searchengine='1']");
     }
 	function fnShowSearchEngineSummary(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		echo do_shortcode('['.WSM_PREFIX.'_showSearchEngineSummary]');
 	}
 	function fnShowContentByURL(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		echo do_shortcode("[".WSM_PREFIX."_showContentByURL]");
 	}
 	function fnShowContentURLStats(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		echo do_shortcode("[".WSM_PREFIX."_showContentByURLStats]");
 	}
 	function fnIPExclusion(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		echo do_shortcode("[".WSM_PREFIX."_showIPExclustion]");
 	}
 	function fnShowTitleCloud(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		echo do_shortcode("[".WSM_PREFIX."_showTitleCloud]");
 	}
     function wsmSavePluginSettings(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         $tzstring = get_option('wsmTimezoneString');
        
 	   if(null !== (sanitize_text_field($_POST[WSM_PREFIX.'TimezoneString'])) && sanitize_text_field($_POST[WSM_PREFIX.'TimezoneString'])!=''){
@@ -395,6 +495,9 @@ function wsm_dismiss_notice()
 
     }
 	function wsmViewAddOns(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		$addons = apply_filters( 'wsm_addons', array() );
 		$addons_settings = apply_filters( 'wsm_addons_settings', array() );
 		
@@ -496,6 +599,9 @@ function wsm_dismiss_notice()
 		echo '</div>';
 	}
     function wsmViewSettings(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         global $wsmAdminJavaScript,$wsmAdminPageHooks;
 		if(isset($_POST[WSM_PREFIX.'_form']))
 		{
@@ -1142,10 +1248,16 @@ $wsmRobots = get_option(WSM_PREFIX.'Robots');
 		echo wsmInitPlugin::wsm_strip_tags($html.=$wsmAdminJavaScript.$this->endWrapper);
     }
     function wsmGetTimeZoneDropDown($tzstring){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         $html='<select id="'.WSM_PREFIX.'TimezoneString" name="'.WSM_PREFIX.'TimezoneString" aria-describedby="timezone-description">'.     wp_timezone_choice( $tzstring, get_user_locale() ).'</select>';
         return wsmInitPlugin::wsm_strip_tags($html);
     }
     function wsmGetCountryDropDown($code=''){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         $arrCountries=$this->objDatabase->fnGetAllCountries();
         $html='<select id="'.WSM_PREFIX.'Country" name="'.WSM_PREFIX.'Country" >';
         foreach($arrCountries as $country){
@@ -1159,6 +1271,9 @@ $wsmRobots = get_option(WSM_PREFIX.'Robots');
     }
     function wsmGetArchiteDaysDropDown($days=30)
 	{
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
 		$html='<select id="'.WSM_PREFIX.'ArchiveDays" name="'.WSM_PREFIX.'ArchiveDays" >';
 		if($days==30){
             $html.='<option value="30" selected="selected">'.__('Last 30 Days','wp-stats-manager').'</option>';
@@ -1189,6 +1304,9 @@ $wsmRobots = get_option(WSM_PREFIX.'Robots');
 	}
     
     function wsmGetChartDaysDropDown($days=30){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         $html='<select id="'.WSM_PREFIX.'ChartDays" name="'.WSM_PREFIX.'ChartDays" >';
         if($days==15){
             $html.='<option value="15" selected="selected">'.__('Last 15 Days','wp-stats-manager').'</option>';
@@ -1215,6 +1333,9 @@ $wsmRobots = get_option(WSM_PREFIX.'Robots');
         return wsmInitPlugin::wsm_strip_tags($html.='</select>');
     }
     function wsmCreateSubLayout($layout){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         global $wsmAdminPageHooks,$wsmRequestArray,$wp_meta_boxes;        
         switch($layout){
             case 'Summary':
@@ -1357,6 +1478,9 @@ $wsmRobots = get_option(WSM_PREFIX.'Robots');
         }
     }
     function wsmShowMainPageLayout($page){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         global $wsmAdminPageHooks,$wsmAdminJavaScript,$wsmRequestArray;
         echo wsmInitPlugin::wsm_strip_tags($this->startMetaBoxWrapper);
         echo '<form name="'.WSM_PREFIX.'mainMetboxForm" id="'.WSM_PREFIX.'mainMetboxForm" method="post">';
@@ -1375,6 +1499,9 @@ $wsmRobots = get_option(WSM_PREFIX.'Robots');
                 }';
     }
     function wsmViewTraffic(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         global $wsmAdminPageHooks,$wsmAdminJavaScript,$wsmRequestArray;
         echo wsmInitPlugin::wsm_strip_tags($this->startWrapper);
         echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Traffic'));        
@@ -1400,6 +1527,9 @@ $wsmRobots = get_option(WSM_PREFIX.'Robots');
     }
 
     function wsmViewTrafficSources(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         global $wsmAdminPageHooks,$wsmAdminJavaScript,$wsmRequestArray;
         echo wsmInitPlugin::wsm_strip_tags($this->startWrapper);
         echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Traffic Sources'));
@@ -1407,18 +1537,27 @@ $wsmRobots = get_option(WSM_PREFIX.'Robots');
         echo wsmInitPlugin::wsm_strip_tags($this->endWrapper);
     }
     function wsmViewVisitors(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo wsmInitPlugin::wsm_strip_tags($this->startWrapper);
         echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Visitors'));
         $this->wsmShowMainPageLayout(WSM_PREFIX.'_visitors');
         echo wsmInitPlugin::wsm_strip_tags($this->endWrapper);
     }
     function wsmViewContent(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  wsmInitPlugin::wsm_strip_tags($this->startWrapper);
         echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Content'));
         $this->wsmShowMainPageLayout(WSM_PREFIX.'_content');
         echo wsmInitPlugin::wsm_strip_tags($this->endWrapper);
     }
     function wsmViewIPExclusion(){
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
         echo  wsmInitPlugin::wsm_strip_tags($this->startWrapper);
         echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('I.P. Exclusion'));
         $this->wsmShowMainPageLayout(WSM_PREFIX.'_ipexc');

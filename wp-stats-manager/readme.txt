@@ -3,7 +3,7 @@ Contributors: osamaesh
 Tags: analytics, google analytics, insights, stats, visitors
 Requires at least: 5.0
 Tested up to: 6.7.1
-Stable tag: 7.5
+Stable tag: 7.6
 License: GPL3
 
 This plugin will help you to track your visitors & visits, browsers, operating systems, GEO locations and much more, easy to install and working fine.
@@ -81,6 +81,9 @@ Thanks!
 
 
 == Changelog ==
+
+= 7.6 =
+Exclude both IPv4 and IPv6.
 
 = 7.5 =
 Security bug fixing
