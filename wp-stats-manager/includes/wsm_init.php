@@ -567,6 +567,11 @@ class wsmInitPlugin{
     }
 
     static function wsm_getLiveStats(){
+		
+		if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
+		
         $arrRequest=array();
         $arrResponse=array();
         if(isset($_REQUEST) && is_array($_REQUEST))
@@ -1189,58 +1194,63 @@ class wsmInitPlugin{
 		die();
 	}
 	
-	static function wsm_save_ipadress(){
-		
-		
-		
-		// verify the request
-			if( ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'my-nonce') ){
-				
-			$result['status'] = 0;
-			$result['message'] = __('Forbidden!','wp-stats-manager');
-			echo json_encode($result);
-			die();
-			 
-			}
-			
 
-		if ( ! current_user_can( 'manage_options' ) ) {
-			$result['status'] = 0;
-			$result['message'] = __('insufficient privilege!','wp-stats-manager');
-			echo json_encode($result);
-			die();
-		}
-		
-		$address = sanitize_text_field($_POST['ipadress']);
-		
-		$result = array();
-		try{
-		// Validate both IPv4 and IPv6 addresses
-    if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) || filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+static function wsm_save_ipadress() {
 
-			$ipAddresses = get_option('exclusion_ip_address_list');
-			if( !isset($ipAddresses) || !array_key_exists( $address, $ipAddresses ) ){
-				$ipAddresses[$address] = 1;
-				update_option('exclusion_ip_address_list', $ipAddresses);
-				$count = count($ipAddresses);
-				$result['data'] = '<tr id="row_'.$count.'"><td>'.$count.'</td><td>'.$address.'</td><td><label class="switch"><input data-ipaddress="'.$address.'" type="checkbox" checked><div class="slider round"></div></label></td><td><a href="#" data-row="'.$count.'" data-ipaddress="'.$address.'" class="deleteIP button button-secondary">'.__('Delete','wp-stats-manager').'</a></td></tr>';
-				$result['status'] = 1;
-				$result['message'] = __('ip address is successfully added.','wp-stats-manager');	
-			}else{
-				$result['status'] = 0;
-				$result['message'] = __('Entered ip address is already exist in systems.','wp-stats-manager');
-			}
-		}else{
-			$result['status'] = 0;
-			$result['message'] = __('Invalid IP Address','wp-stats-manager');
-		}
-		}catch(Exception $e){
-			$result['status'] = 0;
-			$result['message'] = $e->getMessage();
-		}
-		echo json_encode($result);
-		die();
-	}
+    // verify the request
+    if ( ! isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'my-nonce') ) {
+        $result = [
+            'status' => 0,
+            'message' => __('Forbidden! Invalid or missing nonce.', 'wp-stats-manager')
+        ];
+        echo json_encode($result);
+        die();
+    }
+
+    // check user capabilities
+    if ( ! current_user_can('manage_options') ) {
+        $result = [
+            'status' => 0,
+            'message' => __('Insufficient privileges!', 'wp-stats-manager')
+        ];
+        echo json_encode($result);
+        die();
+    }
+
+    // sanitize and validate IP address
+    $address = isset($_POST['ipadress']) ? sanitize_text_field($_POST['ipadress']) : '';
+
+    $result = [];
+    try {
+        // Validate both IPv4 and IPv6 addresses
+        if (filter_var($address, FILTER_VALIDATE_IP)) {
+            $ipAddresses = get_option('exclusion_ip_address_list', []);
+
+            if (!isset($ipAddresses[$address])) {
+                $ipAddresses[$address] = 1;
+                update_option('exclusion_ip_address_list', $ipAddresses);
+
+                $count = count($ipAddresses);
+                $result['data'] = '<tr id="row_' . $count . '"><td>' . $count . '</td><td>' . esc_html($address) . '</td><td><label class="switch"><input data-ipaddress="' . esc_attr($address) . '" type="checkbox" checked><div class="slider round"></div></label></td><td><a href="#" data-row="' . $count . '" data-ipaddress="' . esc_attr($address) . '" class="deleteIP button button-secondary">' . __('Delete', 'wp-stats-manager') . '</a></td></tr>';
+                $result['status'] = 1;
+                $result['message'] = __('IP address successfully added.', 'wp-stats-manager');
+            } else {
+                $result['status'] = 0;
+                $result['message'] = __('The entered IP address already exists in the system.', 'wp-stats-manager');
+            }
+        } else {
+            $result['status'] = 0;
+            $result['message'] = __('Invalid IP address.', 'wp-stats-manager');
+        }
+    } catch (Exception $e) {
+        $result['status'] = 0;
+        $result['message'] = $e->getMessage();
+    }
+
+    echo json_encode($result);
+    die();
+}
+
     static function wsm_admin_init(){
          global  $wsmAdminPageHooks;
          $theme= get_user_option('admin_color');
