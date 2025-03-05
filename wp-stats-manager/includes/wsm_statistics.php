@@ -797,7 +797,7 @@ class wsmStatistics
                 elm.text(minutes+":"+ seconds);
             });
         };
-        setInterval(wsmCounterTimer, 1000);        
+        setInterval(wsmCounterTimer, 10000);        
         ';
         return wsmInitPlugin::wsm_strip_tags($html);
     }
@@ -861,7 +861,7 @@ class wsmStatistics
                 elm.text(minutes+":"+ seconds);
             });
         };
-        setInterval(wsmCounterTimer, 1000); 
+        setInterval(wsmCounterTimer, 10000); 
         ';
         return wsmInitPlugin::wsm_strip_tags($html);
     }
@@ -1053,7 +1053,7 @@ class wsmStatistics
                 elm.text(minutes+":"+ seconds);
             });
         };
-        setInterval(wsmCounterTimer, 1000);         
+        setInterval(wsmCounterTimer, 10000);         
         ';
         return wsmInitPlugin::wsm_strip_tags($html);
     }
