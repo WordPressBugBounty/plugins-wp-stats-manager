@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Plugin Name: WP Visitor Statistics (Real Time Traffic)
  * Plugin URI: http://plugins-market.com/contact-us
  * Description: This plugin will track the web analytics for each page and show various analytics report in admin panel as well as in front end.
- * Version: 7.8
+ * Version: 7.9
  * Author: osamaesh 
  * Author URI: http://plugins-market.com/
  * Developer: osamaesh
@@ -13,11 +14,11 @@
  * Copyright:  Plugins-market 2017.
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
-**/
+ **/
 
 
-if ( ! defined( 'ABSPATH' ) ) {
-    die( 'Access denied.' );
+if (! defined('ABSPATH')) {
+	die('Access denied.');
 }
 
 //require_once( ABSPATH. 'wp-includes/pluggable.php');
@@ -25,21 +26,21 @@ include_once('notifications.php');
 
 
 
-define( 'WSM_PREFIX','wsm' );                       
-define( 'WSM_NAME',__('Visitor Statistics (Free)','wp-stats-manager') );
-define( 'WSM_DIR', plugin_dir_path( __FILE__ ) );
-define( 'WSM_URL', plugin_dir_url( __FILE__ ) );
-define( 'WSM_FILE', __FILE__ );
-define( 'WSM_ONLINE_SESSION',15 ); //DEFINE ONLINE SESSION TIME IN MINUTES
-define( 'WSM_PAGE_LIMIT',10 ); //DEFINE ONLINE SESSION TIME IN MINUTES
-global $wsmAdminColors,$wsmAdminJavaScript,$wsmAdminPageHooks,$wsmRequestArray,$arrCashedStats;
-$wsmAdminJavaScript='';
-$wsmAdminPageHooks=array();
-$wsmRequestArray=array();
-if(isset($_REQUEST) && is_array($_REQUEST)){
-	
-	
-  /*
+define('WSM_PREFIX', 'wsm');
+define('WSM_NAME', 'Visitor Statistics (Free)');
+define('WSM_DIR', plugin_dir_path(__FILE__));
+define('WSM_URL', plugin_dir_url(__FILE__));
+define('WSM_FILE', __FILE__);
+define('WSM_ONLINE_SESSION', 15); //DEFINE ONLINE SESSION TIME IN MINUTES
+define('WSM_PAGE_LIMIT', 10); //DEFINE ONLINE SESSION TIME IN MINUTES
+global $wsmAdminColors, $wsmAdminJavaScript, $wsmAdminPageHooks, $wsmRequestArray, $arrCashedStats;
+$wsmAdminJavaScript = '';
+$wsmAdminPageHooks = array();
+$wsmRequestArray = array();
+if (isset($_REQUEST) && is_array($_REQUEST)) {
+
+
+	/*
 		$page = isset($_REQUEST['page']) ? sanitize_text_field($_REQUEST['page']) : '';
 		$subPage = isset($_REQUEST['subPage']) ? sanitize_text_field($_REQUEST['subPage']) : '';
 		$subTab = isset($_REQUEST['subTab']) ? sanitize_text_field($_REQUEST['subTab']) : '';
@@ -109,49 +110,48 @@ if(isset($_REQUEST) && is_array($_REQUEST)){
 	$browser = isset($_REQUEST['browser']) ? esc_attr($_REQUEST['browser']) : '';
 	$os = isset($_REQUEST['os']) ? esc_attr($_REQUEST['os']) : '';
 	$device = isset($_REQUEST['device']) ? esc_attr($_REQUEST['device']) : '';
-	
-		$wsmRequestArray = array(
-							'page' => $page,
-							'subPage' => $subPage,
-							'subTab' => $subTab,
-							'wmcAction' => $wmcAction,
-							'action_name' => $action_name,
-							'visitorId' => $visitorId,
-							'setSiteId' => $setSiteId,
-							'setPageId' => $setPageId,
-							'setUrlReferrer' => $setUrlReferrer,
-							'setTrackerUrl' => $setTrackerUrl,
-							'setWpUserId' => $setWpUserId,
-							
-							'siteId' => $siteId,
-							'rec' => $rec,
-							'rand' => $rand,
-							'h' => $h,
-							'm' => $m,
-							's' => $s,
-							'url' => $url,
-							'uid' => $uid,
-							'pid' => $pid,
-							
-							'fvts' => $fvts,
-							'vc' => $vc,
-							'idn' => $idn,
-							'refts' => $refts,
-							'lvts' => $lvts,
-							'fullRef' => $fullRef,
-							'send_image' => $send_image,
-							'cookie' => $cookie,
-							'res' => $res,
-							'gtms' => $gtms,
-							'pvId' => $pvId,
-							'browser' => $browser,
-							'os' => $os,
-							'device' => $device
-							);
-	
- 
+
+	$wsmRequestArray = array(
+		'page' => $page,
+		'subPage' => $subPage,
+		'subTab' => $subTab,
+		'wmcAction' => $wmcAction,
+		'action_name' => $action_name,
+		'visitorId' => $visitorId,
+		'setSiteId' => $setSiteId,
+		'setPageId' => $setPageId,
+		'setUrlReferrer' => $setUrlReferrer,
+		'setTrackerUrl' => $setTrackerUrl,
+		'setWpUserId' => $setWpUserId,
+
+		'siteId' => $siteId,
+		'rec' => $rec,
+		'rand' => $rand,
+		'h' => $h,
+		'm' => $m,
+		's' => $s,
+		'url' => $url,
+		'uid' => $uid,
+		'pid' => $pid,
+
+		'fvts' => $fvts,
+		'vc' => $vc,
+		'idn' => $idn,
+		'refts' => $refts,
+		'lvts' => $lvts,
+		'fullRef' => $fullRef,
+		'send_image' => $send_image,
+		'cookie' => $cookie,
+		'res' => $res,
+		'gtms' => $gtms,
+		'pvId' => $pvId,
+		'browser' => $browser,
+		'os' => $os,
+		'device' => $device
+	);
 }
-include_once(WSM_DIR .'includes/'. WSM_PREFIX."_init.php");
+include_once(WSM_DIR . 'includes/' . WSM_PREFIX . "_init.php");
 wsmInitPlugin::initWsm();
-add_action( 'plugins_loaded', function() { load_plugin_textdomain( 'wp-stats-manager', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );	} );
-?>
+add_action('plugins_loaded', function () {
+	load_plugin_textdomain('wp-stats-manager', false, dirname(plugin_basename(__FILE__)) . '/languages');
+});

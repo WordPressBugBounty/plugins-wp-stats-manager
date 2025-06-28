@@ -2,8 +2,8 @@
 Contributors: osamaesh
 Tags: analytics, google analytics, insights, stats, visitors
 Requires at least: 5.0
-Tested up to: 6.7.2
-Stable tag: 7.8
+Tested up to: 6.8.1
+Stable tag: 7.9
 License: GPL3
 
 This plugin will help you to track your visitors & visits, browsers, operating systems, GEO locations and much more, easy to install and working fine.
@@ -82,6 +82,8 @@ Thanks!
 
 == Changelog ==
 
+= 7.9 =
+Bug Fixing: vulnerable to Cross Site Scripting (XSS)
 
 = 7.8 =
 1. Solve error in wsm_db.php file

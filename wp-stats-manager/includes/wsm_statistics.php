@@ -60,12 +60,16 @@ class wsmStatistics
         if (!current_user_can('manage_options')) {
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
+
         $atts = shortcode_atts(array(
-            'title' => __('Today', 'wp-stats-manager'),
+            'title' => esc_html(__('Today', 'wp-stats-manager')),
             'date' => wsmGetCurrentDateByTimeZone('Y-m-d')
         ), $atts, WSM_PREFIX . '_showDayStats');
 
-        $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
+        // Only sanitize id if it exists
+        if (isset($atts['id'])) {
+            $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
+        }
         $todayPageViews = $this->objDatabase->fnGetTotalPageViewCount('Today');
         $todayVisitors = $this->objDatabase->fnGetTotalVisitorsCount('Today');
         $onlineVisitors = $this->objDatabase->fnGetTotalVisitorsCount('Online');
@@ -103,7 +107,7 @@ class wsmStatistics
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
         $atts = shortcode_atts(array(
-            'title' => __('Today', 'wp-stats-manager')
+            'title' => esc_html(__('Today', 'wp-stats-manager'))
         ), $atts, WSM_PREFIX . '_showGenStats');
 
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
@@ -137,7 +141,7 @@ class wsmStatistics
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
         $atts = shortcode_atts(array(
-            'title' => __('Today', 'wp-stats-manager'),
+            'title' => esc_html(__('Today', 'wp-stats-manager')),
             'days' => ''
         ), $atts, WSM_PREFIX . '_showLastDaysStats');
 
@@ -173,10 +177,13 @@ class wsmStatistics
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
         $atts = shortcode_atts(array(
-            'title' => __('Forecast', 'wp-stats-manager')
+            'title' => esc_html(__('Forecast', 'wp-stats-manager'))
         ), $atts, WSM_PREFIX . '_showForeCast');
 
-        $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
+        // Only sanitize id if it exists
+        if (isset($atts['id'])) {
+            $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
+        }
         $nDays = get_option(WSM_PREFIX . 'ChartDays');
         $nDays = ($nDays != '' && $nDays > 0) ? $nDays : 30;
         $arrForeCast = $this->objDatabase->fnGetTodaysForeCastData();
@@ -210,9 +217,8 @@ class wsmStatistics
         $hours14Change = wsmGetChangeInPercentage($visitors14DaysHour, $hourVisitors);
         $hours14Class = $hours14Change < 0 ? 'wsmColorRed' : '';
         $day14Change = wsmGetChangeInPercentage($visitors14Days, $todayVisitors);
-        $day14Class = $day14Change < 0 ? 'wsmColorRed' : '';
         $html = '<div class="wsmForeCast">
-        <div class="wsmForecastHeader">' . __($atts['title'], 'wp-stats-manager') . '</div>
+<div class="wsmForecastHeader">' . esc_html(__($atts['title'], 'wp-stats-manager')) . '</div>
         <ul class="wsmUL">
         <li><div class="wsmLeftBlock"><label>' . __('Current Hour', 'wp-stats-manager') . '</label><div class="wsmH2Number">' . number_format_i18n($hourVisitors, 0) . '</div><label>' . __('Visitors', 'wp-stats-manager') . '</label></div><div class="wsmRightBlock"><div class="wsmTop"><span class="wsmH2Number ' . $hours7Class . '">' . number_format_i18n($hours7Change, 2) . '%</span><span class="wsmLabel">' . __('than 7 days ago', 'wp-stats-manager') . '</span></div><div class="wsmBottom"><span class="wsmH2Number ' . $hours14Class . '">' . number_format_i18n($hours14Change, 2) . '%</span><span>' . __('than 14 days ago', 'wp-stats-manager') . '</span></div></div></li>
         <li><div class="wsmLeftBlock"><label>' . __('Current Day', 'wp-stats-manager') . '</label><div class="wsmH2Number">' . number_format_i18n($todayVisitors, 0) . '</div><label>' . __('Visitors', 'wp-stats-manager') . '</label></div><div class="wsmRightBlock"><div class="wsmTop"><span class="wsmH2Number ' . $day7Class . '">' . number_format_i18n($day7Change, 2) . '%</span><span class="wsmLabel">' . __('than 7 days ago', 'wp-stats-manager') . '</span></div><div class="wsmBottom"><span class="wsmH2Number ' . $day14Class . '">' . number_format_i18n($day14Change, 2) . '%</span><span>' . __('than 14 days ago', 'wp-stats-manager') . '</span></div></div></li>
@@ -230,7 +236,7 @@ class wsmStatistics
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
         $atts = shortcode_atts(array(
-            'title' => __('GeoLocation', 'wp-stats-manager'),
+            'title' => esc_html(__('GeoLocation', 'wp-stats-manager')),
             'width' => '400px',
             'height' => '200px',
             'id' => 'showGeoLocationChart',
@@ -322,7 +328,7 @@ class wsmStatistics
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
         $atts = shortcode_atts(array(
-            'title' => __('Get Current Stats', 'wp-stats-manager'),
+            'title' => esc_html(__('Get Current Stats', 'wp-stats-manager')),
             'id' => 'barStacked',
             'width' => '1140px',
             'height' => '400px'
@@ -562,7 +568,7 @@ class wsmStatistics
         }
         $atts = shortcode_atts(array(
             'days' => $nDays,
-            'title' => __('Get Current Stats', 'wp-stats-manager'),
+            'title' => esc_html(__('Get Current Stats', 'wp-stats-manager')),
             'id' => 'lastDaysChart',
             'width' => '1140px',
             'height' => '400px'
@@ -744,7 +750,7 @@ class wsmStatistics
         global $wsmAdminJavaScript;
         $atts = shortcode_atts(array(
             'limit' => 10,
-            'title' => __('Get Current Stats', 'wp-stats-manager'),
+            'title' => esc_html(__('Get Current Stats', 'wp-stats-manager')),
             'id' => 'recentVisitedPages'
         ), $atts, WSM_PREFIX . '_showRecentVisitedPages');
         if (!current_user_can('manage_options')) {
@@ -810,7 +816,7 @@ class wsmStatistics
         global $wsmAdminJavaScript;
         $atts = shortcode_atts(array(
             'limit' => 10,
-            'title' => __('Get Current Stats', 'wp-stats-manager'),
+            'title' => esc_html(__('Get Current Stats', 'wp-stats-manager')),
             'id' => 'recentVisitedPagesdetailsList'
         ), $atts, WSM_PREFIX . '_showRecentVisitedPages');
 
@@ -874,7 +880,7 @@ class wsmStatistics
         global $wsmAdminJavaScript;
         $atts = shortcode_atts(array(
             'limit' => 10,
-            'title' => __('Get Popular Pages', 'wp-stats-manager'),
+            'title' => esc_html(__('Get Popular Pages', 'wp-stats-manager')),
             'id' => 'popularPagesList'
         ), $atts, WSM_PREFIX . '_showPopularPages');
 
@@ -909,7 +915,7 @@ class wsmStatistics
         global $wsmAdminJavaScript;
         $atts = shortcode_atts(array(
             'limit' => 10,
-            'title' => __('Get Popular Referrers', 'wp-stats-manager'),
+            'title' => esc_html(__('Get Popular Referrers', 'wp-stats-manager')),
             'id' => 'popularReferrersList'
         ), $atts, WSM_PREFIX . '_showPopularReferrers');
 

@@ -6,6 +6,8 @@ class wsmAdminInterface
     private $endWrapper;
     private $startMetaBox;
     private $endMetaBox;
+    private $startMetaBoxWrapper;  // Add this line - declare the property
+    private $endMetaBoxWrapper;    // Add this line - declare the property
     private $wsmClear;
     private $objDatabase;
     function __construct()
