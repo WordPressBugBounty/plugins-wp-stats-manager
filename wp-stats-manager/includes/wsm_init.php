@@ -1374,6 +1374,11 @@ class wsmInitPlugin
     }
     static function wsm_viewError()
     {
+		$action_ = isset($_GET['action']) ? $_GET['action'] : '';
+		$page_ = isset($_GET['page']) ? $_GET['page'] : '';
+		
+		if($page_ == 'wsm_traffic' or $action_ == 'fixed_db_issue')
+		{
         global $missing_views;
     ?>
         <div class="notice notice-error">
@@ -1384,6 +1389,22 @@ class wsmInitPlugin
                 <p><?php _e('Sorry for the trouble. Please contact plugin developer to fix this issue.'); ?></p>
                 <?php
             } else {
+				
+				$dbUser = defined('DB_USER') ? DB_USER : 'UNKNOWN_USER';
+					$dbName = defined('DB_NAME') ? DB_NAME : 'UNKNOWN_DB';
+
+					echo '<div style="border:1px solid #e00; padding:15px; background:#fff3f3; color:#a00; font-family:sans-serif; margin-top:20px;">';
+					echo '<h3>⚠️ Database Privileges Issue</h3>';
+					echo '<p>Your current database user <strong>' . esc_html($dbUser) . '</strong> does not have permission to create views.</p>';
+					echo '<p>This is required by the plugin or feature you are trying to use. To resolve this issue, you have two options:</p>';
+					echo '<ol>';
+					echo '<li><strong>Recommended:</strong> Ask your hosting provider to run the following SQL command:</li>';
+					echo '<pre style="background:#f9f9f9; padding:10px; border:1px dashed #ccc;">GRANT CREATE VIEW, SHOW VIEW ON `' . esc_html($dbName) . '`.* TO \'' . esc_html($dbUser) . '\'@\'localhost\';</pre>';
+					echo '<li>Alternatively, switch to a MySQL user that already has <code>CREATE VIEW</code> privileges.</li>';
+					echo '</ol>';
+					echo '<p><strong>Note:</strong> Only a server administrator or someone with GRANT permissions can apply this fix.</p>';
+					echo '</div>';
+					
                 if ($missing_views) {
                 ?>
                     <p><?php echo sprintf(__('There is still %d tables are missing. Please click on below button to fix the issue.', 'wphr'), esc_html($missing_views)); ?></p>
@@ -1391,7 +1412,12 @@ class wsmInitPlugin
                 <?php
 
                 } else {
+					
+					
+					
                 ?>
+				
+				
                     <p><?php _e('There is some of the tables are missing. Please click on below button to fix the issue.', 'wphr'); ?></p>
                     <p><a class="primary button button-primary" href="<?php echo admin_url('index.php?action=fixed_db_issue'); ?>"><?php _e('Fix now!', 'wphr'); ?></a></p>
             <?php
@@ -1400,6 +1426,7 @@ class wsmInitPlugin
             ?>
         </div>
     <?php
+	}
     }
     static function wsm_adminIncludeScripts()
     {
@@ -2119,7 +2146,7 @@ class wsmInitPlugin
         $arrTables['TOOL'] = '_toolBars';
 
         $sql = 'CREATE TABLE ' . self::$tablePrefix . '_searchEngines (
-          id tinyint(2) UNSIGNED NOT NULL AUTO_INCREMENT,
+          id int UNSIGNED NOT NULL AUTO_INCREMENT,
           name varchar(255) DEFAULT NULL,
           PRIMARY KEY (id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
@@ -2138,7 +2165,7 @@ class wsmInitPlugin
         $arrTables['RG'] = '_regions';
 
         $sql = 'CREATE TABLE ' . self::$tablePrefix . '_resolutions (
-          id tinyint(2) UNSIGNED NOT NULL AUTO_INCREMENT,
+          id int UNSIGNED NOT NULL AUTO_INCREMENT,
           name varchar(255) DEFAULT NULL,
           PRIMARY KEY (id)
         ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8;';

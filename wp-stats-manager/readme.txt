@@ -3,7 +3,7 @@ Contributors: osamaesh
 Tags: analytics, google analytics, insights, stats, visitors
 Requires at least: 5.0
 Tested up to: 6.8.1
-Stable tag: 7.9
+Stable tag: 8.1
 License: GPL3
 
 This plugin will help you to track your visitors & visits, browsers, operating systems, GEO locations and much more, easy to install and working fine.
@@ -81,6 +81,9 @@ Thanks!
 
 
 == Changelog ==
+
+= 8.1 =
+Updated the data type of the id column from TINYINT(2) UNSIGNED to INT UNSIGNED to support more than 255 records per table.
 
 = 7.9 =
 Bug Fixing: vulnerable to Cross Site Scripting (XSS)
