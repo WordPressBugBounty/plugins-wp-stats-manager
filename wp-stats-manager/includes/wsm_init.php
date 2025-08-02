@@ -2119,7 +2119,7 @@ class wsmInitPlugin
         $arrTables['LOG_VISIT'] = '_logVisit';
 
         $sql = 'CREATE TABLE ' . self::$tablePrefix . '_oSystems (
-          id tinyint(2) UNSIGNED NOT NULL AUTO_INCREMENT,
+          id int UNSIGNED NOT NULL AUTO_INCREMENT,
           name varchar(255) DEFAULT NULL,
           PRIMARY KEY (id)
         ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8;';
@@ -2128,7 +2128,7 @@ class wsmInitPlugin
         $arrTables['OS'] = '_oSystems';
 
         $sql = 'CREATE TABLE ' . self::$tablePrefix . '_browsers (
-          id tinyint(2) UNSIGNED NOT NULL AUTO_INCREMENT,
+          id int UNSIGNED NOT NULL AUTO_INCREMENT,
           name varchar(255) DEFAULT NULL,
           PRIMARY KEY (id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
@@ -2137,7 +2137,7 @@ class wsmInitPlugin
         $arrTables['BROW'] = '_browsers';
 
         $sql = 'CREATE TABLE ' . self::$tablePrefix . '_toolBars (
-          id tinyint(2) UNSIGNED NOT NULL AUTO_INCREMENT,
+          id int UNSIGNED NOT NULL AUTO_INCREMENT,
           name varchar(255) DEFAULT NULL,
           PRIMARY KEY (id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8';
@@ -2155,7 +2155,7 @@ class wsmInitPlugin
         $arrTables['SE'] = '_searchEngines';
 
         $sql = 'CREATE TABLE ' . self::$tablePrefix . '_regions (
-          id tinyint(1) UNSIGNED NOT NULL AUTO_INCREMENT,
+          id int UNSIGNED NOT NULL AUTO_INCREMENT,
           code char(2) NOT NULL COMMENT \'Region code\',
           name varchar(255) DEFAULT NULL,
           PRIMARY KEY (id)
