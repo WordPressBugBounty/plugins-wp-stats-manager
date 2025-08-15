@@ -1087,6 +1087,18 @@ class wsmStatistics
         $ipAddress = wsmFnGetIPAddress();
         $objLocation = wsmFnGetLocationInfo($ipAddress);
         $googleMapAPI = get_option(WSM_PREFIX . 'GoogleMapAPI');
+		
+		// Sanitize shortcode attributes to prevent XSS in JS context.
+		$zoom = isset($atts['zoom']) ? (int) $atts['zoom'] : 1;
+		if ($zoom < 0) { $zoom = 0; }
+		if ($zoom > 21) { $zoom = 21; }
+
+		$height = isset($atts['height']) ? $atts['height'] : '300px';
+		if (!preg_match('/^\d+(px|%)$/', $height)) { $height = '300px'; }
+
+		$safe_id = sanitize_key($atts['id']);
+		
+		
         if (is_null($googleMapAPI) || $googleMapAPI == '') {
             echo '<br><br>&nbsp;<i>' . __('Please enter map API key (check the settings page for more details)', 'wp-stats-manager') . '</i><br><br>';
         } else {
@@ -1104,7 +1116,7 @@ class wsmStatistics
             if ($atts['call'] == 'ajax') {
                 return json_encode($arrJSMarkers);
             }
-            $html = '<style>#' . WSM_PREFIX . '_' . sanitize_key($atts['id']) . '{height:' . $atts['height'] . ';}</style><div id="' . WSM_PREFIX . '_' . $atts['id'] . '" class="wsmMapContainer" ></div>';
+            $html = '<style>#' . WSM_PREFIX . '_' . esc_attr($safe_id) . '{height:' . esc_attr($height) . ';}</style><div id="' . WSM_PREFIX . '_' . esc_attr($safe_id) . '" class="wsmMapContainer" ></div>';
             $wsmAdminJavaScript .= "arrLiveStats.push('" . WSM_PREFIX . '_' . $atts['id'] . "'); var " . WSM_PREFIX . "_locations=[]; var " . WSM_PREFIX . "_lDetails=[];";
             if (is_array($arrJSMarkers) && count($arrJSMarkers) > 0) {
                 $wsmAdminJavaScript .= "var arrPages=" . json_encode($arrJSMarkers) . ";
@@ -1133,11 +1145,11 @@ class wsmStatistics
         }          
         ';
             $wsmAdminJavaScript .= '
-        var ' . WSM_PREFIX . 'ZoomLevel= ' . $atts['zoom'] . ';                         
+        var ' . WSM_PREFIX . 'ZoomLevel= ' . $zoom . ';                       
         var ' . WSM_PREFIX . 'centerObj= {lat: parseFloat(' . $objLocation->geoplugin_latitude . '), lng: parseFloat(' . $objLocation->geoplugin_longitude . ')};                         
         window.wsmInitMap=function() {
         var infoWindow = new google.maps.InfoWindow;                
-        var map_' . WSM_PREFIX . '_' . $atts['id'] . ' = new google.maps.Map(document.getElementById("' . WSM_PREFIX . '_' . $atts['id'] . '"), {
+        var map_' . WSM_PREFIX . '_' . $safe_id . ' = new google.maps.Map(document.getElementById("' . WSM_PREFIX . '_' . $atts['id'] . '"), {
         center: ' . WSM_PREFIX . 'centerObj ,
         zoom: ' . WSM_PREFIX . 'ZoomLevel,
         mapTypeId: \'satellite\',
@@ -1146,14 +1158,14 @@ class wsmStatistics
         navigationControl: false,
         scaleControl: false
         });
-        google.maps.event.addListener(map_' . WSM_PREFIX . '_' . $atts['id'] . ', \'zoom_changed\',function() {
-            ' . WSM_PREFIX . 'ZoomLevel=map_' . WSM_PREFIX . '_' . $atts['id'] . '.getZoom();            
+        google.maps.event.addListener(map_' . WSM_PREFIX . '_' . $safe_id . ', \'zoom_changed\',function() {
+            ' . WSM_PREFIX . 'ZoomLevel=map_' . WSM_PREFIX . '_' . $safe_id . '.getZoom();            
         });
-        google.maps.event.addListener(map_' . WSM_PREFIX . '_' . $atts['id'] . ', \'center_changed\',function() {            
-            ' . WSM_PREFIX . 'centerObj=map_' . WSM_PREFIX . '_' . $atts['id'] . '.getCenter();
+        google.maps.event.addListener(map_' . WSM_PREFIX . '_' . $safe_id . ', \'center_changed\',function() {            
+            ' . WSM_PREFIX . 'centerObj=map_' . WSM_PREFIX . '_' . $safe_id . '.getCenter();
         });
-        google.maps.event.addListener(map_' . WSM_PREFIX . '_' . $atts['id'] . ', \'drag\',function() {            
-            ' . WSM_PREFIX . 'centerObj=map_' . WSM_PREFIX . '_' . $atts['id'] . '.getCenter();
+        google.maps.event.addListener(map_' . WSM_PREFIX . '_' . $safe_id . ', \'drag\',function() {            
+            ' . WSM_PREFIX . 'centerObj=map_' . WSM_PREFIX . '_' . $safe_id . '.getCenter();
         });
         ';
             $subJs .= "        

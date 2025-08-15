@@ -2,8 +2,8 @@
 Contributors: osamaesh
 Tags: analytics, google analytics, insights, stats, visitors
 Requires at least: 5.0
-Tested up to: 6.8.1
-Stable tag: 8.2
+Tested up to: 6.8.2
+Stable tag: 8.3
 License: GPL3
 
 This plugin will help you to track your visitors & visits, browsers, operating systems, GEO locations and much more, easy to install and working fine.
@@ -81,6 +81,9 @@ Thanks!
 
 
 == Changelog ==
+
+= 8.3
+Security: Fixed stored XSS in wsm_showMostActiveVisitorsGeo shortcode by sanitizing zoom, id, and height attributes before output.
 
 = 8.2 =
 Updated the data type of some database columns to fix the Out of range value for column 'id'
