@@ -573,9 +573,19 @@ class wsmStatistics
             'width' => '1140px',
             'height' => '400px'
         ), $atts, WSM_PREFIX . '_showLastDaysStatsChart');
+		
+		
+		    // SECURE: sanitize incoming shortcode values
+		$atts['id']     = sanitize_key($atts['id']);
+		$atts['title']  = sanitize_text_field($atts['title']);
+		$atts['width']  = sanitize_text_field($atts['width']);
+		$atts['height'] = sanitize_text_field($atts['height']);
+		$atts['days']   = intval($atts['days']);
+		
+		
         $html = '<div class="chartContainer">';
         $html .= $this->wsm_getTopChartBar('lastdaychart');
-        $html .= '<div id="' . $atts['id'] . '"></div></div>';
+        $html .= '<div id="' . esc_attr($atts['id']) . '"></div></div>';
         $tDays = 2;
         $atts['days'] = intval($atts['days']);
         if ($atts['days'] > 35) {
@@ -596,17 +606,20 @@ class wsmStatistics
         $toDayForeCast['pageViews'] = round(wsmFnCalculateForeCastData(array_keys($yArray['pageViews']), $yArray['pageViews'], 7), 0);
         $toDayForeCast['firstTimeVisitors'] = round(wsmFnCalculateForeCastData(array_keys($yArray['firstTimeVisitors']), $yArray['firstTimeVisitors'], 7), 0);
         $colors = array('rgba(244,81,81,1)', 'rgba(251,194,70,1)', 'rgba(87,135,184,1)', 'rgba(0,128,0,1)');
-        $wsmAdminJavaScript .= "
-        //arrLiveStats.push('" . WSM_PREFIX . "CurrentDayStats_" . $atts['id'] . "_" . wsmGetYesterdayDateByTimeZone('Yxmxd') . "');
+        $safeId = esc_js($atts['id']);
+		$wsmAdminJavaScript .= "
+        //arrLiveStats.push('" . WSM_PREFIX . "CurrentDayStats_" . esc_attr($atts['id']) . "_" . wsmGetYesterdayDateByTimeZone('Yxmxd') . "');
         //jQuery('#" . WSM_PREFIX . "_lastDaysChart h2.hndle').html('<span>" . sprintf(__('Last %d Days', 'wp-stats-manager'), intval($atts['days'])) . "</span>');
-        var {$atts['id']}_bpageViews=" . json_encode($arrLineData['pageViews']) . ";
-        var {$atts['id']}_bvisitors=" . json_encode($arrLineData['visitors']) . ";
-        var {$atts['id']}_bfirstVisitors=" . json_encode($arrLineData['firstTimeVisitors']) . ";
-        var {$atts['id']}_bBounce = " . json_encode($arrLineData['Bounce']) . ";
-        var {$atts['id']}_bppv = " . json_encode($arrLineData['ppv']) . ";
-        var {$atts['id']}_bnewVisitor = " . json_encode($arrLineData['newVisitor']) . ";
-        var {$atts['id']}_bavgOnline = " . json_encode($arrLineData['avgOnline']) . ";
-        var {$atts['id']}_legendIndex=[];
+        
+		
+		var {$safeId}_bpageViews=" . json_encode($arrLineData['pageViews']) . ";
+        var {$safeId}_bvisitors=" . json_encode($arrLineData['visitors']) . ";
+        var {$safeId}_bfirstVisitors=" . json_encode($arrLineData['firstTimeVisitors']) . ";
+        var {$safeId}_bBounce = " . json_encode($arrLineData['Bounce']) . ";
+        var {$safeId}_bppv = " . json_encode($arrLineData['ppv']) . ";
+        var {$safeId}_bnewVisitor = " . json_encode($arrLineData['newVisitor']) . ";
+        var {$safeId}_bavgOnline = " . json_encode($arrLineData['avgOnline']) . ";
+        var {$safeId}_legendIndex=[];
         var bcolors=" . json_encode($colors) . ";
         var keyLabels=['" . __('First Time Visitor', 'wp-stats-manager') . "','" . __('Visitors', 'wp-stats-manager') . "','" . __('Page Views', 'wp-stats-manager') . "'];
         var {$atts['id']}_arrLineData=[{$atts['id']}_bfirstVisitors,{$atts['id']}_bvisitors,{$atts['id']}_bpageViews];

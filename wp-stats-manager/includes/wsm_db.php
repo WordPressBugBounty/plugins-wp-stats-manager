@@ -371,7 +371,7 @@ class wsmDatabase
             );
         }
     }
-    function fnReturnURLElements($url)
+   /* function fnReturnURLElements($url)
     {
         //$url=strtolower($url);
         $url = rtrim($url, "/");
@@ -381,7 +381,42 @@ class wsmDatabase
         $newURL = str_replace('www.', '', $newURL);
         $hash = substr(md5($newURL), 0, 16);
         return array('protocol' => $arrURL['scheme'] . '://', 'url' => $newURL, 'hash' => $hash);
+    }*/
+	
+	function fnReturnURLElements($url)
+{
+    $url = rtrim((string) $url, "/");
+    if ($url === '') {
+        return array('protocol' => '', 'url' => '', 'hash' => '');
     }
+
+    $parts = @parse_url($url);
+    if ($parts === false) {
+
+        $newURL = preg_replace('#^https?://#i', '', $url);
+        $newURL = preg_replace('#^www\.#i',     '', $newURL);
+        return array('protocol' => '', 'url' => $newURL, 'hash' => substr(md5($newURL), 0, 16));
+    }
+
+    $scheme   = isset($parts['scheme']) ? $parts['scheme'] : '';
+    $protocol = $scheme !== '' ? $scheme . '://' : '';
+
+
+    $newURL = $url;
+    if ($protocol !== '') {
+        $newURL = preg_replace('#^' . preg_quote($protocol, '#') . '#i', '', $newURL);
+    }
+    $newURL = preg_replace('#^www\.#i', '', $newURL);
+
+    return array(
+        'protocol' => $protocol,
+        'url'      => $newURL,
+        'hash'     => substr(md5($newURL), 0, 16),
+    );
+}
+
+
+
     function fnGetSearchEngineID($url)
     {
         global $wpdb;

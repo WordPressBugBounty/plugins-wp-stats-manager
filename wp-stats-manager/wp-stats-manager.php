@@ -3,7 +3,7 @@
  * Plugin Name: WP Visitor Statistics (Real Time Traffic)
  * Plugin URI: http://plugins-market.com/contact-us
  * Description: This plugin will track the web analytics for each page and show various analytics report in admin panel as well as in front end.
- * Version: 8.3
+ * Version: 8.4
  * Author: osamaesh 
  * Author URI: http://plugins-market.com/
  * Developer: osamaesh

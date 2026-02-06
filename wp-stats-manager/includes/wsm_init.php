@@ -1903,7 +1903,9 @@ class wsmInitPlugin
 
 
         // User lowercase string for comparison.
-        $user_agent = strtolower($_SERVER['HTTP_USER_AGENT']);
+       // $user_agent = strtolower($_SERVER['HTTP_USER_AGENT']);
+	   $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? strtolower($_SERVER['HTTP_USER_AGENT']) : '';
+
 
         // A list of some common words used only for bots and crawlers.
         $wsmRobots = get_option(WSM_PREFIX . 'Robots');
