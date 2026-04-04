@@ -2282,7 +2282,17 @@ class wsmStatistics
             'second' => $second
         ), $atts, WSM_PREFIX . '_showCurrentStats');
 
-        $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
+        $atts['id']        = preg_replace( '/[^a-zA-Z0-9_\-]/', '', $atts['id'] );
+        $atts['title']     = esc_html( sanitize_text_field( $atts['title'] ) );
+        $atts['width']     = preg_replace( '/[^a-zA-Z0-9%.]/', '', $atts['width'] );
+        $atts['height']    = preg_replace( '/[^a-zA-Z0-9%.]/', '', $atts['height'] );
+        $atts['type']      = sanitize_key( $atts['type'] );
+        $atts['condition'] = sanitize_key( $atts['condition'] );
+        $atts['from']      = sanitize_text_field( $atts['from'] );
+        $atts['to']        = sanitize_text_field( $atts['to'] );
+        $atts['first']     = sanitize_text_field( $atts['first'] );
+        $atts['second']    = sanitize_text_field( $atts['second'] );
+
         $arrChartStats = array();
         $arrChartStatSecond = array();
         $yMax = 0;

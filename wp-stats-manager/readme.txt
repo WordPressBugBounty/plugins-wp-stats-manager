@@ -3,7 +3,7 @@ Contributors: osamaesh
 Tags: analytics, google analytics, insights, stats, visitors
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 8.4
+Stable tag: 8.5
 License: GPL3
 
 This plugin will help you to track your visitors & visits, browsers, operating systems, GEO locations and much more, easy to install and working fine.
@@ -81,6 +81,15 @@ Thanks!
 
 
 == Changelog ==
+
+
+
+= 8.5
+
+Fixed missing current_user_can() check on 7 AJAX handlers (unauthorized data access)
+Fixed unauthenticated DROP TABLE via ?action=fixed_db_issue — added capability check + nonce (CVE-2025-49996)
+Added wp_nonce_url() to both "Fix now!" buttons
+Fixed Stored XSS in wsm_showDayStatsGraph shortcode — sanitized all user-supplied attributes before output
 
 = 8.4
 Security: Fixed stored XSS in wsm_showLastDaysStatsChart  shortcode by sanitizing data before output.
@@ -381,3 +390,5 @@ Bug fixing when giving access to the editor users
 1. Fix schedule cron job issue
 = 1.0 =
 1. Initial version
+
+htik4fxkhjcvoqtak1qboa3vkgghsaln

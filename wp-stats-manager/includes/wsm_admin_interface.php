@@ -51,7 +51,7 @@ function wsm_dismiss_notice()
 				function wsm_upgrade_to_pro()
 				{
 					
-					  jQuery(\'#wsm_modal\').modal();
+					  jQuery(\'#wsm-upgrade-modal\').modal({ escapeClose: true, clickClose: true, showClose: false });
 					
 				}
 </script>

@@ -41,6 +41,7 @@ class wsmInitPlugin
         add_filter('clean_url', array('wsmInitPlugin', WSM_PREFIX . '_async_scripts'), 11, 1);
         add_action('wp_enqueue_scripts',  array('wsmInitPlugin', WSM_PREFIX . '_front_script_style'));
         add_action('admin_footer', array('wsmInitPlugin', WSM_PREFIX . '_setting_popup_func'));
+        add_action('wp_ajax_wsm_dismiss_upgrade_modal', array('wsmInitPlugin', WSM_PREFIX . '_dismiss_upgrade_modal'));
         add_filter('script_loader_tag', WSM_PREFIX . '_add_async_defer_attribute', 10, 2);
         //update_option(WSM_PREFIX.'KeepData',1);
 
@@ -642,6 +643,10 @@ class wsmInitPlugin
     }
     static function wsm_getReferrerDetails()
     {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to view this content.', 'wp-stats-manager' ) ), 403 );
+            wp_die();
+        }
         $arrRequest = array();
         $arrResponse = array();
         if (isset($_REQUEST['requests'])) {
@@ -685,7 +690,10 @@ class wsmInitPlugin
 
     static function wsm_getDateWiseLocationDetail()
     {
-
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to view this content.', 'wp-stats-manager' ) ), 403 );
+            wp_die();
+        }
 
         $arrRequest = array(
             'city' => sanitize_text_field($_REQUEST['city']),
@@ -767,6 +775,10 @@ class wsmInitPlugin
     }
     static function wsm_getContentUrlDayView()
     {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to view this content.', 'wp-stats-manager' ) ), 403 );
+            wp_die();
+        }
         $arrRequest = array();
         $arrResponse = array();
 
@@ -846,6 +858,10 @@ class wsmInitPlugin
     }
     static function wsm_getReferralOSDetails()
     {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to view this content.', 'wp-stats-manager' ) ), 403 );
+            wp_die();
+        }
         $arrRequest = array();
         $arrResponse = array();
 
@@ -929,6 +945,10 @@ class wsmInitPlugin
     }
     static function wsm_getReferrerUrlDetails()
     {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to view this content.', 'wp-stats-manager' ) ), 403 );
+            wp_die();
+        }
         $arrRequest = array();
         $arrResponse = array();
 
@@ -1006,8 +1026,10 @@ class wsmInitPlugin
 
     static function wsm_getUOSummary()
     {
-
-
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to view this content.', 'wp-stats-manager' ) ), 403 );
+            wp_die();
+        }
 
         $arrRequest = array();
         $arrResponse = array();
@@ -1072,6 +1094,10 @@ class wsmInitPlugin
     }
     static function wsm_getTimezoneByCountry()
     {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to view this content.', 'wp-stats-manager' ) ), 403 );
+            wp_die();
+        }
         $countryCode = (isset($_REQUEST['code']) && $_REQUEST['code'] != '') ? sanitize_text_field($_REQUEST['code']) : '';
         echo wsmFnGetTimeZoneByCountry($countryCode);
         wp_die();
@@ -1312,6 +1338,12 @@ class wsmInitPlugin
             add_action('admin_notices', array('wsmInitPlugin', WSM_PREFIX . '_viewError'));
 
             if (isset($_GET['action']) && $_GET['action'] == 'fixed_db_issue' && !isset($_GET['success'])) {
+                if ( ! current_user_can( 'manage_options' ) ) {
+                    wp_die( __( 'You do not have permission to perform this action.', 'wp-stats-manager' ), 403 );
+                }
+                if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( $_GET['_wpnonce'], 'wsm_fix_db_issue' ) ) {
+                    wp_die( __( 'Security check failed. Please try again.', 'wp-stats-manager' ), 403 );
+                }
                 $wpdb->query('DROP TABLE IF EXISTS ' . self::$tablePrefix . '_pageViews');
                 $wpdb->query('DROP TABLE IF EXISTS ' . self::$tablePrefix . '_uniqueVisitors');
                 $wpdb->query('DROP TABLE IF EXISTS ' . self::$tablePrefix . '_bounceVisits');
@@ -1408,7 +1440,7 @@ class wsmInitPlugin
                 if ($missing_views) {
                 ?>
                     <p><?php echo sprintf(__('There is still %d tables are missing. Please click on below button to fix the issue.', 'wphr'), esc_html($missing_views)); ?></p>
-                    <p><a class="primary button button-primary" href="<?php echo admin_url('index.php?action=fixed_db_issue'); ?>"><?php _e('Fix now!', 'wphr'); ?></a></p>
+                    <p><a class="primary button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url('index.php?action=fixed_db_issue'), 'wsm_fix_db_issue' ) ); ?>"><?php _e('Fix now!', 'wphr'); ?></a></p>
                 <?php
 
                 } else {
@@ -1419,7 +1451,7 @@ class wsmInitPlugin
 				
 				
                     <p><?php _e('There is some of the tables are missing. Please click on below button to fix the issue.', 'wphr'); ?></p>
-                    <p><a class="primary button button-primary" href="<?php echo admin_url('index.php?action=fixed_db_issue'); ?>"><?php _e('Fix now!', 'wphr'); ?></a></p>
+                    <p><a class="primary button button-primary" href="<?php echo esc_url( wp_nonce_url( admin_url('index.php?action=fixed_db_issue'), 'wsm_fix_db_issue' ) ); ?>"><?php _e('Fix now!', 'wphr'); ?></a></p>
             <?php
                 }
             }
@@ -2010,19 +2042,34 @@ class wsmInitPlugin
 
     static function wsm_setting_popup_func()
     {
-
         global $pagenow, $wsmRequestArray;
 
-        $page = isset($wsmRequestArray['page']) && $wsmRequestArray['page'] != '' ? sanitize_text_field($wsmRequestArray['page']) : '';
+        $page = isset( $wsmRequestArray['page'] ) && $wsmRequestArray['page'] != '' ? sanitize_text_field( $wsmRequestArray['page'] ) : '';
 
-        //wsm_traffic
-
-        if ($pagenow == 'admin.php' && (strpos($page, WSM_PREFIX) !== false)) {
-
-
-            require_once WSM_DIR . '/includes/wsm_modal.php';
-            add_option('wsm_popup_status', 1);
+        if ( ! ( $pagenow == 'admin.php' && strpos( $page, WSM_PREFIX ) !== false ) ) {
+            return;
         }
+
+        // Record install time the first time the plugin page is visited
+        if ( ! get_option( 'wsm_upgrade_modal_install_time' ) ) {
+            add_option( 'wsm_upgrade_modal_install_time', time() );
+        }
+
+        // Always render the modal HTML so wsm_upgrade_to_pro() can open it on demand.
+        // The JS inside wsm_modal.php handles the 24h auto-open logic separately.
+        require_once WSM_DIR . '/includes/wsm_modal.php';
+    }
+
+    static function wsm_dismiss_upgrade_modal()
+    {
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['nonce'] ), 'wsm_dismiss_upgrade' ) ) {
+            wp_send_json_error( 'Invalid nonce', 403 );
+        }
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( 'Unauthorized', 403 );
+        }
+        update_option( 'wsm_upgrade_modal_dismissed', true );
+        wp_send_json_success();
     }
 
 
