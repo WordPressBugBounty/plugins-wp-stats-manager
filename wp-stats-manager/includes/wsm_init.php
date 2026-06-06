@@ -63,98 +63,118 @@ class wsmInitPlugin
      * @param str $buffer string buffer
      * @return str cleaned up text
      */
-    public static function wsm_strip_tags($buffer)
+    public static function wsm_strip_tags($buffer, $allow_scripts = false)
     {
 
-        static $default_attribs = array(
-            'id' => array(),
-            'class' => array(),
-            'multiple' => array(),
-            'colspan' => array(),
-            'title' => array(),
-            'style' => array(),
-            'data' => array(),
-            'data-mce-id' => array(),
-            'data-value' => array(),
-            'data-chart' => array(),
-            'data-mce-style' => array(),
-            'data-maxy' => array(),
-            'data-pageviews' => array(),
-            'data-visitors' => array(),
-            'data-newvisitor' => array(),
-            'data-colors' => array(),
-            'data-totalpageviews' => array(),
-            'data-tdays' => array(),
-            'data-graph' => array(),
-            'data-referrak_param' => array(),
-            'data-firsttimevisitors' => array(),
-            'onclick' => array(),
-            'aria-describedby'  => array(),
-            'name' => array(),
-            'id' => array(),
-            'value' => array(),
-            'selected' => array(),
-            'checkbox' => array(),
-            'checked' => array(),
-            'scope'  => array(),
-            'for'  => array(),
-            'multiple'  => array(),
-            'type'  => array(),
-            'method'  => array(),
-            'ipaddress'  => array(),
-            'row'  => array(),
-            'data-id'  => array(),
-            'data-ipaddress'  => array()
+        // Built once per request and cached per mode (with/without scripts) so the
+        // ~60+ calls on an admin page don't rebuild this map every time.
+        static $cache = array();
+        $mode = $allow_scripts ? 'scripts' : 'safe';
 
-        );
-
-        $allowed_tags = array(
-            'select'           => $default_attribs,
-            'checkbox'           => $default_attribs,
-            'input'           => $default_attribs,
-            'form'           => $default_attribs,
-            'option'           => $default_attribs,
-            'value'           => $default_attribs,
-            'optgroup'           => $default_attribs,
-            'label'           => $default_attribs,
-            'div'           => $default_attribs,
-            'table'             => array_merge($default_attribs, array(
+        if (!isset($cache[$mode])) {
+            $default_attribs = array(
+                'id' => array(),
+                'class' => array(),
+                'multiple' => array(),
+                'colspan' => array(),
+                'title' => array(),
                 'style' => array(),
-                'method' => array(),
-            )),
-            'tr'           => $default_attribs,
-            'h2'           => $default_attribs,
-            'h1'           => $default_attribs,
-            'h3'           => $default_attribs,
-            'b'           => $default_attribs,
-            'th'           => $default_attribs,
-            'thead'           => $default_attribs,
-            'script'           => $default_attribs,
-            'tbody'           => $default_attribs,
-            'tfooter'           => $default_attribs,
-            'td'           => $default_attribs,
-            'span'          => $default_attribs,
-            'p'             => $default_attribs,
-            'a'             => array_merge($default_attribs, array(
-                'href' => array(),
-                'target' => array('_blank', '_top'),
-            )),
-            'u'             =>  $default_attribs,
-            'i'             =>  $default_attribs,
-            'q'             =>  $default_attribs,
-            'b'             =>  $default_attribs,
-            'ul'            => $default_attribs,
-            'ol'            => $default_attribs,
-            'li'            => $default_attribs,
-            'br'            => $default_attribs,
-            'hr'            => $default_attribs,
-            'strong'        => $default_attribs,
-            'blockquote'    => $default_attribs,
-            'del'           => $default_attribs,
-            'strike'        => $default_attribs,
-            'em'            => $default_attribs,
-            'code'          => $default_attribs,
-        );
+                'data' => array(),
+                'data-mce-id' => array(),
+                'data-value' => array(),
+                'data-chart' => array(),
+                'data-mce-style' => array(),
+                'data-maxy' => array(),
+                'data-pageviews' => array(),
+                'data-visitors' => array(),
+                'data-newvisitor' => array(),
+                'data-colors' => array(),
+                'data-totalpageviews' => array(),
+                'data-tdays' => array(),
+                'data-graph' => array(),
+                'data-referrak_param' => array(),
+                'data-firsttimevisitors' => array(),
+                'aria-describedby'  => array(),
+                'name' => array(),
+                'value' => array(),
+                'selected' => array(),
+                'checkbox' => array(),
+                'checked' => array(),
+                'scope'  => array(),
+                'for'  => array(),
+                'type'  => array(),
+                'method'  => array(),
+                'ipaddress'  => array(),
+                'row'  => array(),
+                'data-id'  => array(),
+                'data-ipaddress'  => array()
+            );
+
+            // Inline event handlers (e.g. onclick) are only permitted for trusted,
+            // statically-generated admin markup. Untrusted output (AJAX/shortcodes)
+            // passes $allow_scripts = false and therefore strips them.
+            if ($allow_scripts) {
+                $default_attribs['onclick'] = array();
+            }
+
+            $allowed_tags = array(
+                'select'           => $default_attribs,
+                'checkbox'           => $default_attribs,
+                'input'           => $default_attribs,
+                'form'           => $default_attribs,
+                'option'           => $default_attribs,
+                'value'           => $default_attribs,
+                'optgroup'           => $default_attribs,
+                'label'           => $default_attribs,
+                'div'           => $default_attribs,
+                'table'             => array_merge($default_attribs, array(
+                    'style' => array(),
+                    'method' => array(),
+                )),
+                'tr'           => $default_attribs,
+                'h2'           => $default_attribs,
+                'h1'           => $default_attribs,
+                'h3'           => $default_attribs,
+                'b'           => $default_attribs,
+                'th'           => $default_attribs,
+                'thead'           => $default_attribs,
+                'tbody'           => $default_attribs,
+                'tfooter'           => $default_attribs,
+                'td'           => $default_attribs,
+                'span'          => $default_attribs,
+                'p'             => $default_attribs,
+                'a'             => array_merge($default_attribs, array(
+                    'href' => array(),
+                    'target' => array('_blank', '_top'),
+                )),
+                'u'             =>  $default_attribs,
+                'i'             =>  $default_attribs,
+                'q'             =>  $default_attribs,
+                'b'             =>  $default_attribs,
+                'ul'            => $default_attribs,
+                'ol'            => $default_attribs,
+                'li'            => $default_attribs,
+                'br'            => $default_attribs,
+                'hr'            => $default_attribs,
+                'strong'        => $default_attribs,
+                'blockquote'    => $default_attribs,
+                'del'           => $default_attribs,
+                'strike'        => $default_attribs,
+                'em'            => $default_attribs,
+                'code'          => $default_attribs,
+            );
+
+            // The <script> tag is only retained for trusted, statically-generated
+            // admin markup (settings/dashboard pages already gated by manage_options).
+            // Untrusted output (AJAX handlers, shortcodes) passes $allow_scripts = false.
+            if ($allow_scripts) {
+                $allowed_tags['script'] = $default_attribs;
+            }
+
+            $cache[$mode] = $allowed_tags;
+        }
+
+        $allowed_tags = $cache[$mode];
 
         if (function_exists('wp_kses')) { // WP is here
 
@@ -166,7 +186,7 @@ class wsmInitPlugin
                 $tags[] = "<$tag>";
             }
 
-            $buffer = wsm_strip_tags($buffer, join('', $tags));
+            $buffer = strip_tags($buffer, join('', $tags));
         }
 
         $buffer = trim($buffer);
@@ -200,14 +220,12 @@ class wsmInitPlugin
         if ($mypage != 'wsm_settings') {
             $wsmAdminJavaScript .= self::wsm_allAjaxRequests();
 
-            echo '<script type="text/javascript">
-        jQuery(function(){
+            $inline_js = 'jQuery(function(){
         var arrLiveStats=[];
-        var WSM_PREFIX="' . WSM_PREFIX . '";
-		
+        var WSM_PREFIX="' . esc_js( WSM_PREFIX ) . '";
         jQuery(".if-js-closed").removeClass("if-js-closed").addClass("closed");
-                ' . $wsmAdminJavaScript . '});
-        </script>';
+        ' . $wsmAdminJavaScript . '});';
+            wp_add_inline_script( WSM_PREFIX . '-custom-admin-script', $inline_js );
         }
     }
 

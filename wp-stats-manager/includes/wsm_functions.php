@@ -2706,7 +2706,9 @@ function wsmFnSendCurlRequest($url){
     $jsonData='';
     $objLocation=null;
    	
-	$response = wp_remote_get($url);
+	// Use a short, explicit timeout so a slow/unreachable geolocation
+	// service cannot stall the visitor tracking request (default would be 5s).
+	$response = wp_remote_get($url, array('timeout' => 2));
  
 	if ( is_array( $response ) && ! is_wp_error( $response ) ) {
 		$headers = $response['headers']; // array of http header lines

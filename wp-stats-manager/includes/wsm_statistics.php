@@ -2283,15 +2283,18 @@ class wsmStatistics
         ), $atts, WSM_PREFIX . '_showCurrentStats');
 
         $atts['id']        = preg_replace( '/[^a-zA-Z0-9_\-]/', '', $atts['id'] );
-        $atts['title']     = esc_html( sanitize_text_field( $atts['title'] ) );
-        $atts['width']     = preg_replace( '/[^a-zA-Z0-9%.]/', '', $atts['width'] );
-        $atts['height']    = preg_replace( '/[^a-zA-Z0-9%.]/', '', $atts['height'] );
+        $atts['title']     = sanitize_text_field( $atts['title'] );
         $atts['type']      = sanitize_key( $atts['type'] );
         $atts['condition'] = sanitize_key( $atts['condition'] );
         $atts['from']      = sanitize_text_field( $atts['from'] );
         $atts['to']        = sanitize_text_field( $atts['to'] );
         $atts['first']     = sanitize_text_field( $atts['first'] );
         $atts['second']    = sanitize_text_field( $atts['second'] );
+
+        // Apply esc_js() to all attributes interpolated into JavaScript strings (Wordfence recommendation)
+        foreach ( ['height', 'width', 'title', 'id'] as $key ) {
+            $atts[ $key ] = esc_js( $atts[ $key ] );
+        }
 
         $arrChartStats = array();
         $arrChartStatSecond = array();
@@ -3907,9 +3910,54 @@ class wsmStatistics
                 }
                 break;
         }
-        //$arrVisitorsInfo = $this->objDatabase->getVisitorsInfo( $atts['condition'] ,$arrAtts);
+        // Fetch the real visitor breakdown (OS / Browser / Screen Resolution).
+        if ($condition == 'Compare') {
+            $compareAtts = $arrAtts;
+            $compareAtts['from'] = $arrAtts['from'];
+            $compareAtts['to']   = $arrAtts['from'];
+            if ($atts['type'] == 'Daily') {
+                $compareAtts['to'] = date('Y-m-t', strtotime($arrAtts['from']));
+            }
+            $arrVisitorsInfo = $this->objDatabase->getVisitorsInfo($condition, $compareAtts);
+        } else {
+            $arrVisitorsInfo = $this->objDatabase->getVisitorsInfo($condition, $arrAtts);
+        }
+
+        $header     = '';
+        $graphPanels = '';
+        $seperator  = '';
+        $link_class = 'active';
+
+        if (is_array($arrVisitorsInfo) && count($arrVisitorsInfo)) {
+            foreach ($arrVisitorsInfo as $key => $data) {
+                $visitor_graph = array();
+                if (is_array($data) && count($data) > 0) {
+                    $counter = 1;
+                    foreach ($data as $row) {
+                        $name  = isset($row['name']) ? $row['name'] : '';
+                        $total = isset($row['total']) ? (int) $row['total'] : 0;
+                        if ($counter <= 8) {
+                            $visitor_graph[] = array($name . ' (' . $total . ')', $total);
+                        }
+                        $counter++;
+                    }
+                }
+
+                // One tab per category; the first one is active and is what the
+                // graph container renders on load (see custom_admin.js).
+                $header .= $seperator . '<a class="' . esc_attr($link_class) . '" data-graph=\'' . json_encode($visitor_graph) . '\' href="#vistor_panel_' . esc_attr($key) . '">' . esc_html($key) . '</a>';
+                $link_class = '';
+                $seperator  = ' | ';
+            }
+        }
+
         ob_start();
-        echo '<div id="visitor_info_graph"><p class="wsmCenter">' . __('Data / Statistics are not available.', 'wp-stats-manager') . '</p></div>';
+        if ($header !== '') {
+            echo '<div class="stats_submenu">' . wsmInitPlugin::wsm_strip_tags($header) . '</div>';
+            echo '<div id="visitor_info_graph"></div>';
+        } else {
+            echo '<div id="visitor_info_graph"><p class="wsmCenter">' . __('Data / Statistics are not available.', 'wp-stats-manager') . '</p></div>';
+        }
         $data = ob_get_contents();
         ob_clean();
         return $data;

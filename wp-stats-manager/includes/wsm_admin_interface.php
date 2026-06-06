@@ -212,7 +212,7 @@ function wsm_dismiss_notice()
             $header .= '</ul>';
         }
         $header .= '</div>' . $this->wsmClear;
-        return wsmInitPlugin::wsm_strip_tags($header);
+        return wsmInitPlugin::wsm_strip_tags($header, true);
 
         //$color = get_user_meta(get_current_user_id(), 'admin_color', true);
     }
@@ -532,7 +532,7 @@ function wsm_dismiss_notice()
             }
         }
 
-        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Addons'));
+        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Addons'), true);
         echo '<div class="wsm_addons_panel">';
         if (is_array($addons) && count($addons)) {
             echo '<form method="post">';
@@ -1244,7 +1244,7 @@ function wsm_dismiss_notice()
 				jQuery("#ipexclusion").hide();
 				</script>';
         //echo $html.=$wsmAdminJavaScript.$this->endWrapper;
-        echo wsmInitPlugin::wsm_strip_tags($html .= $wsmAdminJavaScript . $this->endWrapper);
+        echo wsmInitPlugin::wsm_strip_tags($html .= $wsmAdminJavaScript . $this->endWrapper, true);
     }
     function wsmGetTimeZoneDropDown($tzstring)
     {
@@ -1512,7 +1512,7 @@ function wsm_dismiss_notice()
         }
         global $wsmAdminPageHooks, $wsmAdminJavaScript, $wsmRequestArray;
         echo wsmInitPlugin::wsm_strip_tags($this->startWrapper);
-        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Traffic'));
+        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Traffic'), true);
         $this->wsmShowMainPageLayout(WSM_PREFIX . '_traffic');
         /*   echo $html.=$this->startMetaBoxWrapper;
         echo '<form name="'.WSM_PREFIX.'mainMetboxForm" id="'.WSM_PREFIX.'mainMetboxForm" method="post">';
@@ -1541,7 +1541,7 @@ function wsm_dismiss_notice()
         }
         global $wsmAdminPageHooks, $wsmAdminJavaScript, $wsmRequestArray;
         echo wsmInitPlugin::wsm_strip_tags($this->startWrapper);
-        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Traffic Sources'));
+        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Traffic Sources'), true);
         $this->wsmShowMainPageLayout(WSM_PREFIX . '_trafficsrc');
         echo wsmInitPlugin::wsm_strip_tags($this->endWrapper);
     }
@@ -1551,7 +1551,7 @@ function wsm_dismiss_notice()
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
         echo wsmInitPlugin::wsm_strip_tags($this->startWrapper);
-        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Visitors'));
+        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Visitors'), true);
         $this->wsmShowMainPageLayout(WSM_PREFIX . '_visitors');
         echo wsmInitPlugin::wsm_strip_tags($this->endWrapper);
     }
@@ -1561,7 +1561,7 @@ function wsm_dismiss_notice()
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
         echo  wsmInitPlugin::wsm_strip_tags($this->startWrapper);
-        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Content'));
+        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('Content'), true);
         $this->wsmShowMainPageLayout(WSM_PREFIX . '_content');
         echo wsmInitPlugin::wsm_strip_tags($this->endWrapper);
     }
@@ -1571,7 +1571,7 @@ function wsm_dismiss_notice()
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
         echo  wsmInitPlugin::wsm_strip_tags($this->startWrapper);
-        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('I.P. Exclusion'));
+        echo wsmInitPlugin::wsm_strip_tags($this->fnPrintTitle('I.P. Exclusion'), true);
         $this->wsmShowMainPageLayout(WSM_PREFIX . '_ipexc');
         echo wsmInitPlugin::wsm_strip_tags($this->endWrapper);
     }

@@ -2217,12 +2217,12 @@ class wsmDatabase
         //$sqlQuery.="GROUP BY accessDate";
         //*/
 
-        $sql = 'select date_format( PV.visitLastActionTime, "%Y-%m-%d") AS accessDate,  count( PV. visitId) AS total_visitors,  SUM(PV.totalViews)  AS total_page_views from ' . $this->tablePrefix . '_pageViews PV WHERE PV.refererUrlId = ' . $arrRequest['id'] . '  AND ' . $conditional_query . ' GROUP BY accessDate order by accessDate DESC';
+        $sql = 'select date_format( PV.visitLastActionTime, "%Y-%m-%d") AS accessDate,  count( PV. visitId) AS total_visitors,  SUM(PV.totalViews)  AS total_page_views from ' . $this->tablePrefix . '_pageViews PV WHERE PV.refererUrlId = ' . intval($arrRequest['id']) . '  AND ' . $conditional_query . ' GROUP BY accessDate order by accessDate DESC';
         // echo $sql."<br>";
         $referralUrlData = $this->wsmDB->get_results($sql, ARRAY_A);
 
         $conditional_query = str_replace('PV.visitLastActionTime', 'uv.firstVisitTime', $conditional_query); //"CONVERT_TZ(uv.firstVisitTime,'+00:00','".WSM_TIMEZONE."')";
-        $sql = 'select date_format( uv.firstVisitTime, "%Y-%m-%d") AS accessDate, count( uv.id ) AS total_unique_visitors from ' . $this->tablePrefix . '_uniqueVisitors uv WHERE uv.refererUrlId = ' . $arrRequest['id'] . ' AND ' . $conditional_query . ' GROUP BY accessDate order by accessDate DESC';
+        $sql = 'select date_format( uv.firstVisitTime, "%Y-%m-%d") AS accessDate, count( uv.id ) AS total_unique_visitors from ' . $this->tablePrefix . '_uniqueVisitors uv WHERE uv.refererUrlId = ' . intval($arrRequest['id']) . ' AND ' . $conditional_query . ' GROUP BY accessDate order by accessDate DESC';
 
         //echo $sql."<br>";
         $referralUrlData2 = $this->wsmDB->get_results($sql, ARRAY_A);
@@ -2251,12 +2251,12 @@ class wsmDatabase
     {
         $visitLastActionTime = "CONVERT_TZ(PV.visitLastActionTime,'+00:00','" . WSM_TIMEZONE . "')";
         $result = array('first_visit' => '', 'last_visit' => '');
-        $sql = 'select ' . $visitLastActionTime . ' AS accessDate from ' . $this->tablePrefix . '_pageViews PV WHERE PV.refererUrlId = ' . $id . ' order by accessDate ASC LIMIT 0,1';
+        $sql = 'select ' . $visitLastActionTime . ' AS accessDate from ' . $this->tablePrefix . '_pageViews PV WHERE PV.refererUrlId = ' . intval($id) . ' order by accessDate ASC LIMIT 0,1';
         $data = $this->wsmDB->get_var($sql);
         if ($data) {
             $result['first_visit'] = date('d M Y', strtotime($data));
         }
-        $sql = 'select ' . $visitLastActionTime . ' AS accessDate from ' . $this->tablePrefix . '_pageViews PV WHERE PV.refererUrlId = ' . $id . ' order by accessDate DESC LIMIT 0,1';
+        $sql = 'select ' . $visitLastActionTime . ' AS accessDate from ' . $this->tablePrefix . '_pageViews PV WHERE PV.refererUrlId = ' . intval($id) . ' order by accessDate DESC LIMIT 0,1';
         $data = $this->wsmDB->get_var($sql);
         if ($data) {
             $result['last_visit'] = date('d M Y', strtotime($data));
@@ -2371,13 +2371,13 @@ class wsmDatabase
         if (isset($arrParam['rtype'])) {
             switch ($arrParam['rtype']) {
                 case 'OS':
-                    $conditional_query .= ' AND LU.oSystemId = ' . $arrParam['id'];
+                    $conditional_query .= ' AND LU.oSystemId = ' . intval($arrParam['id']);
                     break;
                 case 'Browser':
-                    $conditional_query .= ' AND LU.browserId = ' . $arrParam['id'];
+                    $conditional_query .= ' AND LU.browserId = ' . intval($arrParam['id']);
                     break;
                 case 'Screen Resolution':
-                    $conditional_query .= ' AND LU.resolutionId = ' . $arrParam['id'];
+                    $conditional_query .= ' AND LU.resolutionId = ' . intval($arrParam['id']);
                     break;
             }
         }
@@ -2401,13 +2401,13 @@ class wsmDatabase
         if (isset($type)) {
             switch ($type) {
                 case 'OS':
-                    $conditional_query .= ' LU.oSystemId = ' . $id;
+                    $conditional_query .= ' LU.oSystemId = ' . intval($id);
                     break;
                 case 'Browser':
-                    $conditional_query .= '  LU.browserId = ' . $id;
+                    $conditional_query .= '  LU.browserId = ' . intval($id);
                     break;
                 case 'Screen Resolution':
-                    $conditional_query .= '  LU.resolutionId = ' . $id;
+                    $conditional_query .= '  LU.resolutionId = ' . intval($id);
                     break;
             }
         }
@@ -2456,7 +2456,7 @@ class wsmDatabase
             $id = 0;
             $compare = '>';
             if (isset($arrParam['id'])) {
-                $id = $arrParam['id'];
+                $id = intval($arrParam['id']);
                 $compare = '=';
             }
 
@@ -2546,7 +2546,7 @@ class wsmDatabase
             $id = 0;
             $compare = '>';
             if (isset($arrParam['id'])) {
-                $id = $arrParam['id'];
+                $id = intval($arrParam['id']);
                 $compare = '=';
             }
             switch ($arrParam['rtype']) {
@@ -2650,12 +2650,12 @@ from ' . $this->tablePrefix . '_uniqueVisitors AS UV LEFT JOIN ' . $this->tableP
             $compare = $arrParam['compare'];
         }
         if (isset($arrParam['location'])) {
-            $city = $arrParam['city'] ? $compare . "'$arrParam[city]'" : $compare . '\'\'';
+            $city = $arrParam['city'] ? $compare . "'" . esc_sql($arrParam['city']) . "'" : $compare . '\'\'';
             $sql = "SELECT LUV.id FROM {$this->tablePrefix}_logUniqueVisit AS LUV 
 				WHERE $conditional_query AND LUV.city $city";
         } else {
             $sql = "SELECT LUV.id FROM {$this->tablePrefix}_logUniqueVisit AS LUV 
-				WHERE $conditional_query AND LUV.countryId $compare $arrParam[countryId]";
+				WHERE $conditional_query AND LUV.countryId $compare " . intval($arrParam['countryId']);
         }
 
         $result = $this->wsmDB->get_results($sql, ARRAY_A);
@@ -2681,9 +2681,9 @@ from ' . $this->tablePrefix . '_uniqueVisitors AS UV LEFT JOIN ' . $this->tableP
         $whereCondition = '';
 
         if (isset($arrParam['city'])) {
-            $whereCondition = 'LU.city = "' . $arrParam['city'] . '"';
+            $whereCondition = 'LU.city = "' . esc_sql($arrParam['city']) . '"';
         } else {
-            $whereCondition = 'LU.countryId = ' . $arrParam['countryId'] . '';
+            $whereCondition = 'LU.countryId = ' . intval($arrParam['countryId']) . '';
         }
 
         $sql = 'select date_format( PV.visitLastActionTime, "%Y-%m-%d") AS accessDate,  count( PV. visitId) AS total_visitors,  
@@ -2717,6 +2717,14 @@ from ' . $this->tablePrefix . '_uniqueVisitors AS UV LEFT JOIN ' . $this->tableP
     function getReferralCountryStartEndVisit($id, $where = 'countryId')
     {
 
+        // Whitelist the column name (never derive a column from raw input) and
+        // escape the value, which may be a numeric id or a city name (string).
+        $allowed_columns = array('countryId', 'visitEntryURLId', 'city');
+        if (!in_array($where, $allowed_columns, true)) {
+            $where = 'countryId';
+        }
+        $id = esc_sql($id);
+
         $result = array('first_visit' => '', 'last_visit' => '');
         $sql = 'SELECT LU.firstActionVisitTime AS accessDate from ' . $this->tablePrefix . '_logUniqueVisit LU WHERE LU.' . $where . ' = "' . $id . '" order by accessDate ASC LIMIT 0,1';
         $data = $this->wsmDB->get_var($sql);
@@ -2749,10 +2757,10 @@ from ' . $this->tablePrefix . '_uniqueVisitors AS UV LEFT JOIN ' . $this->tableP
         $site_url =  str_replace(array('http://www.', 'https://wwww.', 'http://', 'https://', 'www.'), array(), site_url());
         $where_condition = 'UL.url LIKE  "' . $site_url . '%"';
         if (isset($arrParam['id'])) {
-            $where_condition = ' UL.id = ' . $arrParam['id'];
+            $where_condition = ' UL.id = ' . intval($arrParam['id']);
         }
         if (isset($arrParam['search']) && $arrParam['search']) {
-            $where_condition = ' UL.title LIKE "%' . $arrParam['search'] . '%"';
+            $where_condition = ' UL.title LIKE "%' . esc_sql($arrParam['search']) . '%"';
         }
         $order = 'DESC';
         if (isset($_GET['order'])) {
@@ -2788,7 +2796,7 @@ from ' . $this->tablePrefix . '_uniqueVisitors AS UV LEFT JOIN ' . $this->tableP
             $conditional_query .= " {$visitLastActionTime} >= '" . $arrParam['from'] . ' 00:00:00' . "' AND {$visitLastActionTime}<='" . $arrParam['to'] . ' 23:59:59' . "'";
         }
 
-        $sqlQuery     =     'SELECT count(visitorId) As visitors, Count(Distinct visitorId) As newVisitors FROM ' . $this->tablePrefix . '_logUniqueVisit WHERE visitEntryURLId=' . $arrParam['id'] . ' AND ' . $conditional_query;
+        $sqlQuery     =     'SELECT count(visitorId) As visitors, Count(Distinct visitorId) As newVisitors FROM ' . $this->tablePrefix . '_logUniqueVisit WHERE visitEntryURLId=' . intval($arrParam['id']) . ' AND ' . $conditional_query;
         //echo $sqlQuery.'<br />';
         $result        =    $this->wsmDB->get_row($sqlQuery, ARRAY_A);
         return $result;
@@ -2813,7 +2821,7 @@ from ' . $this->tablePrefix . '_uniqueVisitors AS UV LEFT JOIN ' . $this->tableP
 					WHERE ' . $conditional_query;
 
         if (isset($arrParam['id'])) {
-            $sqlQuery .= ' AND UL.id =' . $arrParam['id'];
+            $sqlQuery .= ' AND UL.id =' . intval($arrParam['id']);
         }
         //		echo $sqlQuery.'<br />';
         $allResult = $this->wsmDB->get_row($sqlQuery, ARRAY_A);
@@ -2836,12 +2844,12 @@ from ' . $this->tablePrefix . '_uniqueVisitors AS UV LEFT JOIN ' . $this->tableP
             $conditional_query2 .= " {$serverTime} >= '" . $arrParam['from'] . ' 00:00:00' . "' AND {$serverTime}<='" . $arrParam['to'] . ' 23:59:59' . "'";
         }
 
-        $sqlQuery = 'SELECT date_format( serverTime, "%Y-%m-%d") AS accessDate, count( URLId ) AS hits FROM ' . $this->tablePrefix . '_logVisit WHERE ' . $conditional_query2 . ' AND URLId = ' . $arrParam['id'] . ' GROUP BY accessDate ORDER BY accessDate DESC';
+        $sqlQuery = 'SELECT date_format( serverTime, "%Y-%m-%d") AS accessDate, count( URLId ) AS hits FROM ' . $this->tablePrefix . '_logVisit WHERE ' . $conditional_query2 . ' AND URLId = ' . intval($arrParam['id']) . ' GROUP BY accessDate ORDER BY accessDate DESC';
 
         $referralUrlData        =    $this->wsmDB->get_results($sqlQuery, ARRAY_A);
 
         //print_r($referralUrlData);
-        $sqlQuery     =     'SELECT date_format( firstActionVisitTime, "%Y-%m-%d") AS accessDate, count(visitorId) As visitors, Count(Distinct visitorId) As newVisitors FROM ' . $this->tablePrefix . '_logUniqueVisit WHERE visitEntryURLId=' . $arrParam['id'] . ' AND ' . $conditional_query . ' GROUP BY accessDate ORDER BY accessDate DESC';
+        $sqlQuery     =     'SELECT date_format( firstActionVisitTime, "%Y-%m-%d") AS accessDate, count(visitorId) As visitors, Count(Distinct visitorId) As newVisitors FROM ' . $this->tablePrefix . '_logUniqueVisit WHERE visitEntryURLId=' . intval($arrParam['id']) . ' AND ' . $conditional_query . ' GROUP BY accessDate ORDER BY accessDate DESC';
 
         $referralUrlData2        =    $this->wsmDB->get_results($sqlQuery, ARRAY_A);
 
