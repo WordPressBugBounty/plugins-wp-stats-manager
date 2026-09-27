@@ -75,11 +75,39 @@ function wsm_add_async_defer_attribute($tag, $handle) {
 	
 function wsmMaskIPaddress($ip='')
 {
-	$ip = explode('.', $ip);
-	
-	return $ip[0].'.'.$ip[1].'.'.$ip[2].'.***';
+	// SECURITY: values come from the DB and may contain legacy malicious data
+	// stored before IP validation was added. Only real IPs are displayed.
+	$ip = trim((string) $ip);
+	if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+		$parts = explode('.', $ip);
+		return esc_html($parts[0] . '.' . $parts[1] . '.' . $parts[2] . '.***');
+	}
+	if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+		$parts = explode(':', $ip);
+		return esc_html(implode(':', array_slice($parts, 0, 3)) . ':****');
+	}
+	return '-';
 }
 
+/**
+ * Escape every DB-derived field of a statistics row before it is concatenated
+ * into HTML. URL fields go through esc_url(), everything else esc_html()
+ * (which also encodes quotes, so attribute context is safe too).
+ */
+function wsmFnEscapeStatRow($row)
+{
+	if (!is_array($row)) {
+		return $row;
+	}
+	$urlKeys = array('url', 'refUrl', 'fullURL');
+	foreach ($row as $key => $value) {
+		if (!is_scalar($value) || $key === 'ipAddress') {
+			continue; // ipAddress is validated/escaped in wsmMaskIPaddress()
+		}
+		$row[$key] = in_array($key, $urlKeys, true) ? esc_url((string) $value) : esc_html((string) $value);
+	}
+	return $row;
+}
 
 function wsmGetDateByInterval($interval = '- 1 DAYS',$format='Y-m-d H:i:s',$dateTime='now'){    
 	try{
@@ -2689,18 +2717,29 @@ function wsmUrlToPostid( $url ) {
 
 
 
+/**
+ * Return the visitor IP address.
+ *
+ * SECURITY: proxy headers (X-Forwarded-For, X-Real-IP, CF-Connecting-IP) are
+ * fully attacker-controlled. Every candidate is validated with FILTER_VALIDATE_IP
+ * and anything that is not a real IP address is discarded, so arbitrary strings
+ * (e.g. HTML/JS payloads) can never be stored as the visitor IP.
+ */
 function wsmFnGetIPAddress(){
-    if( array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER) && !empty($_SERVER['HTTP_X_FORWARDED_FOR']) ) {
-        if (strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ',')>0) {
-            $addr = explode(",",$_SERVER['HTTP_X_FORWARDED_FOR']);
-            return trim($addr[0]);
-        } else {
-            return $_SERVER['HTTP_X_FORWARDED_FOR'];
+    $headers = array('HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR');
+    foreach ($headers as $header) {
+        if (empty($_SERVER[$header]) || !is_string($_SERVER[$header])) {
+            continue;
+        }
+        foreach (explode(',', $_SERVER[$header]) as $candidate) {
+            $candidate = trim($candidate);
+            if (filter_var($candidate, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                return $candidate;
+            }
         }
     }
-    else {
-        return $_SERVER['REMOTE_ADDR'];
-    }
+    $remote = isset($_SERVER['REMOTE_ADDR']) ? trim((string) $_SERVER['REMOTE_ADDR']) : '';
+    return filter_var($remote, FILTER_VALIDATE_IP) ? $remote : '0.0.0.0';
 }
 function wsmFnSendCurlRequest($url){
     $jsonData='';

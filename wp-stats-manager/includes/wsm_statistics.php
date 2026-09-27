@@ -776,6 +776,7 @@ class wsmStatistics
         $html .= '<table class="wsmTableStriped">';
         if (is_array($arrPages) && count($arrPages) > 0) {
             foreach ($arrPages as $page) {
+                $page = wsmFnEscapeStatRow($page);
                 $page['city'] = isset($page['city']) && $page['city'] != "" ? $page['city'] : "-";
                 $page['osystem'] = strtolower($page['osystem']);
                 $page['title'] = $page['title'] != '' ? $page['title'] : $page['url'];
@@ -839,6 +840,7 @@ class wsmStatistics
         $html .= '<table class="wsmSpanTable">';
         if (is_array($arrPages) && count($arrPages) > 0) {
             foreach ($arrPages as $page) {
+                $page = wsmFnEscapeStatRow($page);
                 $page['city'] = isset($page['city']) && $page['city'] != "" ? $page['city'] : "-";
                 $page['osystem'] = strtolower($page['osystem']);
                 $page['title'] = $page['title'] != '' ? $page['title'] : $page['url'];
@@ -903,6 +905,7 @@ class wsmStatistics
         $html .= '<table class="wsmTableStriped">';
         if (is_array($arrPages) && count($arrPages) > 0) {
             foreach ($arrPages as $page) {
+                $page = wsmFnEscapeStatRow($page);
                 $page['title'] = $page['title'] != '' ? $page['title'] : $page['fullURL'];
                 $html .= '<tr><td class="wsmTimeDiff">' . $page['stotalViews'] . '</td><td class="wsmPageTitle"><a href="' . $page['fullURL'] . '" title="' . $page['title'] . '">' . $page['title'] . '</a></td></tr>';
             }
@@ -939,6 +942,7 @@ class wsmStatistics
         $html .= '<table class="wsmTableStriped">';
         if (is_array($arrPages) && count($arrPages) > 0) {
             foreach ($arrPages as $page) {
+                $page = wsmFnEscapeStatRow($page);
                 if (wsmFnIsCrossDomain($page['fullURL'])) {
                     $flagRef = false;
                     $page['title'] = $page['title'] != '' ? $page['title'] : $page['fullURL'];
@@ -982,6 +986,7 @@ class wsmStatistics
         $html .= '<table class="wsmTableStriped">';
         if (is_array($arrPages) && count($arrPages) > 0) {
             foreach ($arrPages as $page) {
+                $page = wsmFnEscapeStatRow($page);
                 if (!in_array($page['visitId'], $arrExist)) {
                     $page['title'] = $page['title'] != '' ? $page['title'] : $page['url'];
                     $page['osystem'] = strtolower($page['osystem']);
@@ -1030,6 +1035,7 @@ class wsmStatistics
         $html .= '<table class="wsmSpanTable">';
         if (is_array($arrPages) && count($arrPages) > 0) {
             foreach ($arrPages as $page) {
+                $page = wsmFnEscapeStatRow($page);
                 if (!in_array($page['visitId'], $arrExist)) {
                     $page['title'] = $page['title'] != '' ? $page['title'] : $page['url'];
                     $page['osystem'] = strtolower($page['osystem']);
@@ -1244,6 +1250,7 @@ class wsmStatistics
         $html .= '<table class="wsmTableStriped">';
         if (is_array($arrPages) && count($arrPages) > 0) {
             foreach ($arrPages as $page) {
+                $page = wsmFnEscapeStatRow($page);
                 $html .= '<tr><td class="wsmTimeDiff">' . $page['visitors'] . '</td><td class="wsmIconSet"><img src="' . WSM_URL . 'images/ICO_1px.gif" class="flag flag-' . strtolower($page['alpha2Code']) . '" alt="' . $page['country'] . '" title="' . $page['country'] . '"/>&nbsp;' . $page['country'] . '</td></tr>';
             }
         } else {
@@ -1273,6 +1280,7 @@ class wsmStatistics
         $html .= '<table class="wsmTableStriped">';
         if (is_array($arrPages) && count($arrPages) > 0) {
             foreach ($arrPages as $page) {
+                $page = wsmFnEscapeStatRow($page);
                 $page['city'] = isset($page['city']) && $page['city'] != '' ? $page['city'] : '-';
                 $html .= '<tr><td class="wsmTimeDiff">' . $page['visitors'] . '</td><td class="wsmIconSet"><img src="' . WSM_URL . 'images/ICO_1px.gif" class="flag flag-' . strtolower($page['alpha2Code']) . '" alt="' . $page['country'] . '" title="' . $page['country'] . '"/>&nbsp;' . $page['country'] . ',&nbsp;' . $page['city'] . '</td></tr>';
             }
@@ -3077,6 +3085,7 @@ class wsmStatistics
                 $html .= '<span>' . $counter++ . '</span><span>' . $referrer . '</span><span class="wsmPushRight">' . __('References', 'wp-stats-manager') . ':&nbsp;' . $totalReferrences . '</span>';
                 $html .= '<div class="wsmTableContainer wsmPanel"><table class="wsmTableStriped">';
                 foreach ($referrers as $page) {
+                    $page = wsmFnEscapeStatRow($page);
                     $html .= '<tr><td><b>' . wsmMaskIPaddress($page['ipAddress']) . '</b><div class="wsmPageTitle"><a href="' . $page['url'] . '" title="' . $page['title'] . '">' . $page['title'] . '</a></div></td><td class="wsmIconSet"><img src="' . WSM_URL . '/images/ICO_1px.gif" class="flag flag-' . strtolower($page['alpha2Code']) . '" alt="' . $page['country'] . '" title="' . $page['country'] . '"/><img src="' . WSM_URL . '/images/ICO_1px.gif" class="wsmIcon ' . strtolower(str_replace(" ", "", $page['deviceType'])) . '" alt="' . $page['deviceType'] . '" title="' . $page['deviceType'] . '"/><img src="' . WSM_URL . '/images/ICO_1px.gif" class="wsmIcon ' . strtolower(str_replace(" ", "", $page['browser'])) . '" alt="' . $page['browser'] . '" title="' . $page['browser'] . '"/><img src="' . WSM_URL . '/images/ICO_1px.gif" class="wsmIcon ' . strtolower(str_replace(" ", "", $page['osystem'])) . '" alt="' . $page['osystem'] . '" title="' . $page['osystem'] . '"/></td></tr>';
                 }
                 $html .= '</table></div>';

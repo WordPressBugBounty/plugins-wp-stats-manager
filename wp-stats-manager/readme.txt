@@ -2,8 +2,8 @@
 Contributors: osamaesh
 Tags: analytics, google analytics, insights, stats, visitors
 Requires at least: 5.0
-Tested up to: 6.9
-Stable tag: 8.6
+Tested up to: 7.1.2
+Stable tag: 8.7
 License: GPL3
 
 This plugin will help you to track your visitors & visits, browsers, operating systems, GEO locations and much more, easy to install and working fine.
@@ -82,6 +82,11 @@ Thanks!
 
 == Changelog ==
 
+= 8.7
+Security: Fixed unauthenticated stored XSS via spoofed IP headers (X-Forwarded-For / X-Real-IP / CF-Connecting-IP) — visitor IP is now validated with FILTER_VALIDATE_IP before being stored
+Security: IP addresses are validated and escaped on output in all admin statistics tables, so previously stored malicious values are no longer rendered
+Security: Escaped page URL, title, referrer, city, country, browser and OS fields in visitor statistics tables (prevents attribute injection via tracking parameters)
+Improvement: IPv6 addresses are now masked correctly in visitor lists
 
 = 8.6
 Bug Fixing: vulnerable to Cross Site Scripting (XSS)
