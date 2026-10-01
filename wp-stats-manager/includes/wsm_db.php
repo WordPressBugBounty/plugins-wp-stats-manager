@@ -68,7 +68,7 @@ class wsmDatabase
                 } else if (is_numeric($properties[$key]) || $properties[$key] == '0') {
                     $sql .= $properties[$key] . ',';
                 } else {
-                    $sql .= "'" . addslashes($properties[$key]) . "',";
+                    $sql .= "'" . esc_sql($properties[$key]) . "',";
                 }
             }
 
@@ -612,7 +612,9 @@ class wsmDatabase
     }
     function fnGetReferralTotalVisitorsCountByRefURL($condition = "", $arrParam = array())
     {
-        $sqlQuery = "SELECT DISTINCT LU.visitorId FROM {$this->tablePrefix}{$this->arrTables['LOG_UNIQUE']} LU LEFT JOIN {$this->tablePrefix}{$this->arrTables['LOG_URL']} UL ON LU.refererUrlId=UL.id WHERE UL.url LIKE '{$arrParam['refUrl']}%' AND";
+        $refUrlLike   = $this->wsmDB->esc_like( isset( $arrParam['refUrl'] ) ? $arrParam['refUrl'] : '' ) . '%';
+        $refUrlClause = $this->wsmDB->prepare( "UL.url LIKE %s", $refUrlLike );
+        $sqlQuery = "SELECT DISTINCT LU.visitorId FROM {$this->tablePrefix}{$this->arrTables['LOG_UNIQUE']} LU LEFT JOIN {$this->tablePrefix}{$this->arrTables['LOG_URL']} UL ON LU.refererUrlId=UL.id WHERE {$refUrlClause} AND";
         $visitLastActionTime = "CONVERT_TZ(LU.visitLastActionTime,'+00:00','" . WSM_TIMEZONE . "')";
         switch ($condition) {
             case 'Compare':
@@ -1079,7 +1081,9 @@ class wsmDatabase
     function fnGetTotalReferralsByRefURL($condition = "", $arrParam = array())
     {
         $visitLastActionTime = "CONVERT_TZ(PV.visitLastActionTime,'+00:00','" . WSM_TIMEZONE . "')";
-        $sqlQuery = "select count(*) AS total from  {$this->tablePrefix}_pageViews PV LEFT JOIN {$this->tablePrefix}{$this->arrTables['LOG_URL']} UL ON UL.id=PV.refererUrlId WHERE UL.url LIKE '{$arrParam['refUrl']}%' AND ";
+        $refUrlLike   = $this->wsmDB->esc_like( isset( $arrParam['refUrl'] ) ? $arrParam['refUrl'] : '' ) . '%';
+        $refUrlClause = $this->wsmDB->prepare( "UL.url LIKE %s", $refUrlLike );
+        $sqlQuery = "select count(*) AS total from  {$this->tablePrefix}_pageViews PV LEFT JOIN {$this->tablePrefix}{$this->arrTables['LOG_URL']} UL ON UL.id=PV.refererUrlId WHERE {$refUrlClause} AND ";
         switch ($condition) {
             case 'Normal':
             case 'Range':

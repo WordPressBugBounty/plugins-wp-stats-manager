@@ -150,10 +150,18 @@ class wsmRequests{
         if($fullRef!='' ){
             $keyword=wsmGetSearchKeywords($fullRef);            
         }    
-        $keyword=$keyword?$keyword:$fullRef;   
-		
-		
-        $this->fnSetVisitorProperty('keyword', $keyword);       
+        $keyword=$keyword?$keyword:$fullRef;
+
+        /* Hardening: the keyword is persisted and later read back into analytics
+           queries, so strip tags/control characters and cap its length before
+           storing. The parameterised LIKE clauses in wsm_db.php are the primary
+           defence; this reduces the stored attack surface as well. */
+        $keyword = sanitize_text_field( $keyword );
+        if ( strlen( $keyword ) > 191 ) {
+            $keyword = substr( $keyword, 0, 191 );
+        }
+
+        $this->fnSetVisitorProperty('keyword', $keyword);
     }
     
     function fnHandleNewVisit(){

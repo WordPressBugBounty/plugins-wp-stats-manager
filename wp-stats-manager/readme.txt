@@ -3,7 +3,7 @@ Contributors: osamaesh
 Tags: analytics, google analytics, insights, stats, visitors
 Requires at least: 5.0
 Tested up to: 7.1.2
-Stable tag: 8.7
+Stable tag: 8.7.1
 License: GPL3
 
 This plugin will help you to track your visitors & visits, browsers, operating systems, GEO locations and much more, easy to install and working fine.
@@ -81,6 +81,11 @@ Thanks!
 
 
 == Changelog ==
+
+= 8.7.1
+Security: Fixed unauthenticated second-order (stored) SQL injection in the Traffic Sources report — the referrer keyword captured by the public tracking endpoint is no longer concatenated into the admin "Referring Sites" LIKE queries; those queries now use $wpdb->prepare() with $wpdb->esc_like()
+Security: Hardened visit logging to use esc_sql() instead of addslashes() when building the insert statement
+Security: Sanitize and length-limit the stored search keyword at capture time as an additional safeguard
 
 = 8.7
 Security: Fixed unauthenticated stored XSS via spoofed IP headers (X-Forwarded-For / X-Real-IP / CF-Connecting-IP) — visitor IP is now validated with FILTER_VALIDATE_IP before being stored
