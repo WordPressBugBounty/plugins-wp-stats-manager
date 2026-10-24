@@ -109,7 +109,142 @@ function wsmFnEscapeStatRow($row)
 	return $row;
 }
 
-function wsmGetDateByInterval($interval = '- 1 DAYS',$format='Y-m-d H:i:s',$dateTime='now'){    
+/**
+ * Normalise an OS / browser / screen-resolution name to plain text.
+ *
+ * SECURITY: these values come from the public tracker request and arrive
+ * entity-encoded by esc_attr(), so tags survive sanitize_text_field(). Decode
+ * first, strip tags, then keep a strict allow-list (covers every value sent by
+ * js/wsm_new.js, e.g. "Mac OS X", "OS/2", "1920 x 1080").
+ */
+function wsmSanitizeDeviceTitle($title)
+{
+	$title = html_entity_decode((string) $title, ENT_QUOTES, 'UTF-8');
+	$title = wp_strip_all_tags($title);
+	$title = preg_replace('/[^A-Za-z0-9 ._\/-]/', '', $title);
+	$title = trim(preg_replace('/\s+/', ' ', $title));
+	return substr($title, 0, 50);
+}
+
+/**
+ * Positive integer for a SQL LIMIT / page number. Shortcode attributes and
+ * query args are user-controlled, so they must never reach SQL as text.
+ */
+function wsmFnSanitizeLimit($limit, $default = 10)
+{
+	$limit = is_scalar($limit) ? absint($limit) : 0;
+	return $limit > 0 ? $limit : absint($default);
+}
+
+/**
+ * Periods of the Summary "Last 7 Days" box filter.
+ */
+function wsmGetChartDaysChoices()
+{
+	return array(
+		'7' => __('Last 7 Days', 'wp-stats-manager'),
+		'30' => __('Last 30 Days', 'wp-stats-manager'),
+		'CurrentMonth' => __('This Month', 'wp-stats-manager'),
+		'LastMonth' => __('Last Month', 'wp-stats-manager'),
+	);
+}
+
+/**
+ * The period shown when the Summary opens.
+ */
+function wsmGetDefaultChartDays()
+{
+	return '7';
+}
+
+/**
+ * A period of the filter (unknown values: the default) as what the count functions take:
+ * array($condition, $args, $chartDays, $from, $to). $condition is a string ("7", "0" = today only, or
+ * "Range" with $args from/to); $chartDays is how many days back the chart reads (from today), and
+ * $from/$to the dates the chart keeps.
+ */
+function wsmChartDaysCondition($filter)
+{
+	$choices = wsmGetChartDaysChoices();
+	$filter = is_scalar($filter) && array_key_exists((string) $filter, $choices) ? (string) $filter : wsmGetDefaultChartDays();
+	$today = wsmGetCurrentDateByTimeZone('Y-m-d');
+	switch ($filter) {
+		case 'CurrentMonth':
+			$days = (int) date('j', strtotime($today)) - 1; // 0 on the 1st: today only
+			return array((string) $days, array(), $days, date('Y-m-01', strtotime($today)), $today);
+		case 'LastMonth':
+			$from = date('Y-m-01', strtotime(date('Y-m-01', strtotime($today)) . ' -1 month'));
+			$to = date('Y-m-t', strtotime($from));
+			$days = (int) round((strtotime($today) - strtotime($from)) / 86400);
+			return array('Range', array('from' => $from, 'to' => $to), $days, $from, $to);
+		default:
+			$days = (int) $filter;
+			return array((string) $days, array(), $days, date('Y-m-d', strtotime($today . ' -' . $days . ' days')), $today);
+	}
+}
+
+/**
+ * Chart series of the "Last 7 Days" box for a filter period: the daily series of
+ * fnGetHistoricalDayStatsByDays(), limited to the dates of the period.
+ */
+function wsmFnLastDaysChartData($objDatabase, $filter)
+{
+	list(, , $days, $from, $to) = wsmChartDaysCondition($filter);
+	$series = $objDatabase->fnGetHistoricalDayStatsByDays($days);
+	foreach ($series as $name => $points) {
+		$kept = array();
+		foreach ((array) $points as $point) {
+			if (is_array($point) && isset($point[0]) && is_string($point[0]) && $point[0] >= $from && $point[0] <= $to) {
+				$kept[] = $point;
+			}
+		}
+		$series[$name] = $kept;
+	}
+	$series['tickInterval'] = count($series['pageViews']) > 35 ? '3 days' : '2 days';
+	return $series;
+}
+
+/**
+ * CSS size from a shortcode attribute ("400px", "100%", "300"). These values
+ * are printed inside inline JS strings, so anything else falls back to $default.
+ */
+function wsmFnSanitizeCssSize($size, $default)
+{
+	$size = is_scalar($size) ? trim((string) $size) : '';
+	return preg_match('/^\d+(\.\d+)?(px|%|em|rem|vh|vw)?$/', $size) ? $size : $default;
+}
+
+/**
+ * Build one pie-chart point [label, total] whose label is plain text (no
+ * markup), for the data-graph attributes read by js/custom_admin.js.
+ * DB names may be entity-encoded, even more than once (legacy rows, seeded
+ * country names), so decode until stable before stripping tags.
+ */
+function wsmFnGraphPoint($name, $total)
+{
+	$label = (string) $name;
+	for ($i = 0; $i < 5; $i++) {
+		$decoded = html_entity_decode($label, ENT_QUOTES, 'UTF-8');
+		if ($decoded === $label) {
+			break;
+		}
+		$label = $decoded;
+	}
+	$label = wp_strip_all_tags($label);
+	return array($label . ' (' . intval($total) . ')', intval($total));
+}
+
+/**
+ * Encode graph points for a data-graph="..." attribute. The JSON_HEX_* flags
+ * keep < > & ' " out of the attribute entirely, so DOM decoding can never
+ * turn stored entities back into markup.
+ */
+function wsmFnGraphAttr($graph)
+{
+	return esc_attr(wp_json_encode($graph, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
+}
+
+function wsmGetDateByInterval($interval = '- 1 DAYS',$format='Y-m-d H:i:s',$dateTime='now'){
 	try{
 		$timeZone=  new DateTimeZone(wsmGetTimeZone());
 		$date = new DateTime($dateTime,$timeZone );
@@ -2917,10 +3052,39 @@ function wsmFnGetFilterPostData(){
     $arrPostData=array("{$prefix}FilterType"=>'Hourly',"{$prefix}TxtHourlyNormalDate"=>wsmGetCurrentDateByTimeZone('Y-m-d'),"{$prefix}TxtHourlyRangeFromDate"=>'',"{$prefix}TxtHourlyRangeToDate"=>'',"{$prefix}TxtHourlyCompareFirstDate"=>'',"{$prefix}TxtHourlyCompareSecondDate"=>'',"{$prefix}SelectYear"=>'',"{$prefix}SelectMonth"=>'',"{$prefix}SelectFromYear"=>'',"{$prefix}SelectFromMonth"=>'',"{$prefix}SelectToYear"=>'',"{$prefix}SelectToMonth"=>'',"{$prefix}SelectFirstYear"=>'',"{$prefix}SelectFirstMonth"=>'',"{$prefix}SelectSecondYear"=>'',"{$prefix}SelectSecondMonth"=>'',"{$prefix}SelectMonthlyYear"=>'',"{$prefix}SelectMonthlyFromYear"=>'',"{$prefix}SelectMonthlyToYear"=>'',"{$prefix}SelectMonthlyFirstYear"=>'',"{$prefix}SelectMonthlySeondYear"=>'',"{$prefix}FilterWay"=>'Normal');
     if(isset($_REQUEST["{$prefix}FilterSubmit"]) || isset($_REQUEST["{$prefix}p"])){
         foreach($arrPostData as $key=>$value){
-            $arrPostData[$key]=(isset($_REQUEST[$key])&& $_REQUEST[$key])!=''? sanitize_text_field($_REQUEST[$key]):$arrPostData[$key];
+            if(isset($_REQUEST[$key]) && is_string($_REQUEST[$key]) && $_REQUEST[$key]!=''){
+                $requested=sanitize_text_field(wp_unslash($_REQUEST[$key]));
+                // SECURITY: these values are printed into inline JS and HTML, so
+                // only accept the exact formats the filter form can produce.
+                if(wsmIsValidFilterValue($key,$requested)){
+                    $arrPostData[$key]=$requested;
+                }
+            }
         }
-    }   
+    }
     return $arrPostData;
+}
+/**
+ * Allow-list for the statistics filter fields (see wsmFnGetFilterPostData()).
+ */
+function wsmIsValidFilterValue($key,$value){
+    $prefix=WSM_PREFIX;
+    if($key==="{$prefix}FilterType"){
+        return in_array($value,array('Hourly','Daily','Monthly'),true);
+    }
+    if($key==="{$prefix}FilterWay"){
+        return in_array($value,array('Normal','Range','Compare'),true);
+    }
+    if(strpos($key,"{$prefix}Txt")===0){
+        return (bool) wsmValidateDateTime($value);
+    }
+    if(substr($key,-4)==='Year'){
+        return (bool) preg_match('/^\d{4}$/',$value);
+    }
+    if(substr($key,-5)==='Month'){
+        return (bool) preg_match('/^(0[1-9]|1[0-2])$/',$value);
+    }
+    return false;
 }
 function wsmSanitizeFilteredPostData($hide=''){
     global $arrCashedStats;

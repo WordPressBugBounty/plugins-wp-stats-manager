@@ -3,7 +3,7 @@ Contributors: osamaesh
 Tags: analytics, google analytics, insights, stats, visitors
 Requires at least: 5.0
 Tested up to: 7.1.2
-Stable tag: 8.7.1
+Stable tag: 8.8
 License: GPL3
 
 This plugin will help you to track your visitors & visits, browsers, operating systems, GEO locations and much more, easy to install and working fine.
@@ -81,6 +81,28 @@ Thanks!
 
 
 == Changelog ==
+
+= 8.8 =
+New: "Visitors by Country" map preview on the Traffic > Summary page, below the "Last 7 Days" box (Today, 7 days, 30 days, All time, Online now) - a Pro feature, shown with sample data
+New: "Recent Visitor By IP" report preview on the Traffic > Summary page - a Pro feature, shown with sample data
+New: Site totals boxes at the top of every plugin page - Users Online, Total Page Views, Total Visitors and Total Unique Visitors, refreshed automatically
+New: The "Last 7 Days" box is now the first box of the Summary page, with a period filter (Last 7 Days, Last 30 Days, This Month, Last Month) for its totals and chart
+
+= 8.7.2 =
+Security: Fixed unauthenticated stored XSS via the tracker 'os', 'browser' and 'res' parameters — values are decoded, stripped of tags and limited to a strict character allow-list before being stored in the OS / browser / screen resolution tables
+Security: Visitors and GeoLocation pie charts now output plain-text, fully escaped labels (data-graph attribute), and the chart script escapes legend and tooltip labels, so previously stored values can no longer execute
+Security: The data-graph attribute is no longer allowed by the plugin's output filter
+Security: Added CSRF protection (nonce) to the settings form, and every setting is now validated against its allowed values before it is saved
+Security: IP exclusion add / delete / enable actions use a dedicated nonce, and the IP address and status are validated
+Security: Added a nonce to the "dismiss timezone notice" link
+Security: Statistics filter values are validated (dates, years, months, filter type) and escaped before they are printed in the page or in inline scripts
+Security: The sort order of the Content report only accepts ASC / DESC
+Security: Shortcode "limit" attributes and page numbers are always converted to integers before they are used in database queries
+Security: Referrer URLs and search keywords are escaped in the Top Referrer Sites report
+Security: Shortcode width / height attributes only accept CSS sizes (they are used inside inline scripts)
+Security: The public view-rebuild request (wmcAutoCron) now rebuilds the database views at most once a day
+Fix: Enabling / disabling an excluded IP address and adding an IP from the I.P. Exclusion page did not work (missing or wrong nonce)
+Fix: Removed jQuery 3 incompatible $(window).load() calls in the admin script
 
 = 8.7.1
 Security: Fixed unauthenticated second-order (stored) SQL injection in the Traffic Sources report — the referrer keyword captured by the public tracking endpoint is no longer concatenated into the admin "Referring Sites" LIKE queries; those queries now use $wpdb->prepare() with $wpdb->esc_like()

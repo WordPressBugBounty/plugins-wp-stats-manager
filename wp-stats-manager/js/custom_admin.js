@@ -239,10 +239,12 @@
 			colors = shuffle_color( $id, colors );
 			jQuery.jqplot.config.enablePlugins = true;
 			var data = $content;
-			
+
 			 if (data != null && $.isArray(data) != false && data.length > 0 && $.isArray(data[0]) != false && data[0].length > 0)
-            {		
-				data.map(function(subArr,index){data[index]=[subArr[0],parseInt(subArr[1])]});            
+            {
+				// Labels are plain text: escape them, because jqplot's pie legend
+				// (td.html) and highlighter tooltip (elem.html) render them as HTML.
+				data.map(function(subArr,index){data[index]=[$('<div>').text(String(subArr[0])).html(),parseInt(subArr[1])]});
 			}
             //data.reverse();
             //console.log(data);
@@ -322,7 +324,7 @@
 		/*
 		*	Generate country 
 		*/
-		$(window).load(function(){
+		$(window).on('load', function(){
 			if( $('#country_visitor_info_graph').length ){
 				generate_referral_visitor_info_graph( 'country_visitor_info_graph', $('#country_visitor_info_graph').data('graph') );
 			}	
@@ -392,15 +394,15 @@
 			$('.update_message').removeClass('updated').removeClass('error');
 			var idaddress = $(this).data('ipaddress');
 			var currentRow = $(this).data('row');
-			var _wpnonce =  $('[name="_wpnonce"]').val();
-			
+			var ipNonce = $('#wsm_ip_nonce').val();
+
 			if( !confirm('Are you sure want to delete '+idaddress+' ip address?') ){
 				return false;
 			}
             $.ajax({
                 type: 'POST',
                 url: wsm_ajaxObject.ajax_url,
-                data: 'action=deleteIpAddress&ip='+ idaddress + '&_wpnonce='+_wpnonce,
+                data: { action: 'deleteIpAddress', ip: idaddress, wsm_ip_nonce: ipNonce },
             })
             .done(function( strResponse ){
 				response = $.parseJSON( strResponse );
@@ -433,7 +435,7 @@
             $.ajax({
                 type: 'POST',
                 url: wsm_ajaxObject.ajax_url,
-                data: 'action=updateIpAddress&ip='+ $idaddress +'&status='+ $status,
+                data: { action: 'updateIpAddress', ip: $idaddress, status: $status, wsm_ip_nonce: $('#wsm_ip_nonce').val() },
             })
             .done(function( strResponse ){
 				response = $.parseJSON( strResponse );
@@ -603,8 +605,8 @@
 		});	
 	
 	
-	$(window).load(function(){
-		if(window.location.hash) 
+	$(window).on('load', function(){
+		if(window.location.hash)
 		{
 			jQuery('.sublist-section li > a[href="'+window.location.hash+'"]').trigger("click");
 		}

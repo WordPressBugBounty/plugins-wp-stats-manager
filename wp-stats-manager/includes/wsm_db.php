@@ -207,8 +207,9 @@ class wsmDatabase
     function fnGetBrowserIDByTitle($title = '')
     {
         $id = 0;
-        if (isset($title) && $title != '') {
-            $sql = $this->wsmDB->prepare('SELECT id FROM ' . $this->tablePrefix . $this->arrTables['BROW'] . ' WHERE name like %s', '%' . $title . '%');
+        $title = wsmSanitizeDeviceTitle($title);
+        if ($title != '') {
+            $sql = $this->wsmDB->prepare('SELECT id FROM ' . $this->tablePrefix . $this->arrTables['BROW'] . ' WHERE name like %s', '%' . $this->wsmDB->esc_like($title) . '%');
             $id = $this->wsmDB->get_var($sql);
             if (is_null($id) || $id == '') {
                 $id = 0;
@@ -223,8 +224,9 @@ class wsmDatabase
     function fnGetOSIDByTitle($title = '')
     {
         $id = 0;
-        if (isset($title) && $title != '') {
-            $sql = $this->wsmDB->prepare('SELECT id FROM ' . $this->tablePrefix . $this->arrTables['OS'] . ' WHERE name like %s', '%' . $title . '%');
+        $title = wsmSanitizeDeviceTitle($title);
+        if ($title != '') {
+            $sql = $this->wsmDB->prepare('SELECT id FROM ' . $this->tablePrefix . $this->arrTables['OS'] . ' WHERE name like %s', '%' . $this->wsmDB->esc_like($title) . '%');
             $id = $this->wsmDB->get_var($sql);
             if (is_null($id) || $id == '') {
                 $id = 0;
@@ -239,7 +241,8 @@ class wsmDatabase
     function fnGetResolutionIDByTitle($title = '')
     {
         $id = 0;
-        if (isset($title) && $title != '') {
+        $title = wsmSanitizeDeviceTitle($title);
+        if ($title != '') {
             $sql = $this->wsmDB->prepare('SELECT id FROM ' . $this->tablePrefix . $this->arrTables['RSOL'] . ' WHERE name = %s', $title);
             $id = $this->wsmDB->get_var($sql);
             if (is_null($id) || $id == '') {
@@ -485,7 +488,8 @@ class wsmDatabase
         $sqlQuery .= " WHERE {$visitLastActionTime} >= '" . wsmGetDateByInterval('-' . WSM_ONLINE_SESSION . ' minutes') . "'";
         $sqlQuery .= " ORDER BY VI.hits DESC";
 
-        if ($limit != '')
+        $limit = is_scalar($limit) ? absint($limit) : 0;
+        if ($limit > 0)
             $sqlQuery .= " limit 0, $limit";
 
         $arrResult = $this->wsmDB->get_results($sqlQuery, ARRAY_A);
@@ -1015,7 +1019,7 @@ class wsmDatabase
         }
 
         $totalRecords = $this->wsmDB->num_rows;
-        $cPage = isset($arrParam['currentPage']) ? $arrParam['currentPage'] : 1;
+        $cPage = isset($arrParam['currentPage']) ? wsmFnSanitizeLimit($arrParam['currentPage'], 1) : 1;
         $offset = ($cPage - 1) * WSM_PAGE_LIMIT;
         $sqlReportQuery .= " LIMIT {$offset}," . WSM_PAGE_LIMIT;
         if ($mainQuery == 1) {
@@ -1191,6 +1195,7 @@ class wsmDatabase
         }
         $sqlQuery .= " ORDER BY visitors DESC";
         $sqlReportQuery .= " ORDER BY visitors DESC";
+        $limit = is_scalar($limit) ? absint($limit) : 0;
         if ($limit != 0) {
             $sqlQuery .= " LIMIT 0,{$limit}";
             $sqlReportQuery .= " LIMIT 0,{$limit}";
@@ -1220,6 +1225,7 @@ class wsmDatabase
         }
         $sqlQuery .= " ORDER BY pageViews DESC";
         $sqlReportQuery .= " ORDER BY pageViews DESC";
+        $limit = is_scalar($limit) ? absint($limit) : 0;
         if ($limit != 0) {
             $sqlQuery .= " LIMIT 0,{$limit}";
             $sqlReportQuery .= " LIMIT 0,{$limit}";
@@ -2107,7 +2113,7 @@ class wsmDatabase
         $currentDate = wsmGetCurrentDateByTimeZone();
         $sql = 'SELECT *,TIMEDIFF("' . $currentDate . '",' . $serverTime . ') as timeDiff FROM ' . $this->tablePrefix . '_visitorInfo';
         $sql .= ' WHERE ' . $serverTime . ' >= "' . wsmGetDateByInterval('-' . WSM_ONLINE_SESSION . ' minutes') . '"';
-        $sql .= ' ORDER BY serverTime DESC limit 0,' . $limit;
+        $sql .= ' ORDER BY serverTime DESC limit 0,' . wsmFnSanitizeLimit($limit, 10);
         $result = $this->wsmDB->get_results($sql, ARRAY_A);
         return $result;
     }
@@ -2130,7 +2136,7 @@ class wsmDatabase
         $serverTime = "CONVERT_TZ(VI.serverTime,'+00:00','" . $newTimeZone . "')";
         $sql = 'SELECT VI.URLId, VI.title, VI.url as fullURL, sum(VI.hits) as stotalViews, VI.visitLastActionTime FROM ' . $this->tablePrefix . '_visitorInfo VI';
         $sql .= ' WHERE ' . $serverTime . ' >= "' . wsmGetDateByInterval('-' . WSM_ONLINE_SESSION . ' minutes') . '"';
-        $sql .= ' GROUP by VI.URLId ORDER BY stotalViews DESC limit 0,' . $limit;
+        $sql .= ' GROUP by VI.URLId ORDER BY stotalViews DESC limit 0,' . wsmFnSanitizeLimit($limit, 10);
         $result = $this->wsmDB->get_results($sql, ARRAY_A);
         return $result;
     }
@@ -2144,7 +2150,7 @@ class wsmDatabase
         $sql = 'SELECT LU.refererUrlId, CONCAT(UL.protocol,UL.url) as fullURL, ' . $visitLastActionTime . ' as visitLastActionTime,COUNT(LU.refererUrlId) AS totalReferrers FROM ' . $this->tablePrefix . '_logUniqueVisit  LU  LEFT JOIN ' . $this->tablePrefix . '_url_log UL ON LU.refererUrlId=UL.id  WHERE LU.refererUrlId!=0';
         // $sql='SELECT * FROM '.$this->tablePrefix.'_popularReferrers ORDER BY totalReferrers DESC';
         $sql .= ' AND ' . $visitLastActionTime . ' >= "' . wsmGetDateByInterval('-' . WSM_ONLINE_SESSION . ' minutes') . '"';
-        $sql .= 'GROUP BY LU.refererUrlId ORDER BY totalReferrers DESC, visitLastActionTime  DESC limit 0,' . $limit;
+        $sql .= 'GROUP BY LU.refererUrlId ORDER BY totalReferrers DESC, visitLastActionTime  DESC limit 0,' . wsmFnSanitizeLimit($limit, 10);
         $result = $this->wsmDB->get_results($sql, ARRAY_A);
         return $result;
     }
@@ -2501,7 +2507,7 @@ class wsmDatabase
 						ORDER BY UL.id DESC";
         //$allResult=$this->wsmDB->get_results($sqlQuery,ARRAY_A);
         $totalRecords = $this->wsmDB->get_var($sqlCountQuery);
-        $cPage = isset($arrParam['currentPage']) ? $arrParam['currentPage'] : 1;
+        $cPage = isset($arrParam['currentPage']) ? wsmFnSanitizeLimit($arrParam['currentPage'], 1) : 1;
         $offset = ($cPage - 1) * WSM_PAGE_LIMIT;
         $sqlQuery .= " LIMIT {$offset}," . WSM_PAGE_LIMIT;
         $arrResult['data'] = $this->wsmDB->get_results($sqlQuery, ARRAY_A);
@@ -2635,7 +2641,7 @@ from ' . $this->tablePrefix . '_uniqueVisitors AS UV LEFT JOIN ' . $this->tableP
 
 
         if (isset($arrParam['limit'])) {
-            $sql .= ' LIMIT 0, ' . $arrParam['limit'];
+            $sql .= ' LIMIT 0, ' . wsmFnSanitizeLimit($arrParam['limit'], 8);
         }
         //echo $sql;
         $result = $this->wsmDB->get_results($sql, ARRAY_A);
@@ -2766,9 +2772,10 @@ from ' . $this->tablePrefix . '_uniqueVisitors AS UV LEFT JOIN ' . $this->tableP
         if (isset($arrParam['search']) && $arrParam['search']) {
             $where_condition = ' UL.title LIKE "%' . esc_sql($arrParam['search']) . '%"';
         }
+        // SECURITY: ORDER BY direction cannot be parameterised, so only allow ASC/DESC.
         $order = 'DESC';
-        if (isset($_GET['order'])) {
-            $order =  sanitize_text_field($_GET['order']);
+        if (isset($_GET['order']) && is_string($_GET['order']) && strtolower($_GET['order']) === 'asc') {
+            $order = 'ASC';
         }
         $sqlQuery = 'SELECT UL.id, UL.pageId, UL.protocol, UL.title, count( UL.id ) AS hits, UL.url FROM ' . $this->tablePrefix . '_url_log AS UL 
 					LEFT JOIN ' . $this->tablePrefix . '_logVisit AS LV ON LV.URLId = UL.id
@@ -2777,7 +2784,8 @@ from ' . $this->tablePrefix . '_uniqueVisitors AS UV LEFT JOIN ' . $this->tableP
         $allResult = $this->wsmDB->get_results($sqlQuery, ARRAY_A);
         $totalRecords = $this->wsmDB->num_rows;
         $arrResult['totalRecords'] = $totalRecords;
-        $cPage = isset($arrParam['currentPage']) ? $arrParam['currentPage'] : 1;
+        $limit = wsmFnSanitizeLimit($limit, 50);
+        $cPage = isset($arrParam['currentPage']) ? wsmFnSanitizeLimit($arrParam['currentPage'], 1) : 1;
         $offset = ($cPage - 1) * $limit;
         $sqlQuery .= " LIMIT {$offset}," . $limit;
         $arrResult['data'] = $this->wsmDB->get_results($sqlQuery, ARRAY_A);

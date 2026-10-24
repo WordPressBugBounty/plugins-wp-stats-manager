@@ -63,10 +63,10 @@ if (! class_exists('wsm_free_Notification')) :
 
 			if ($user_timezone && $system_timezone && $user_timezone !== $system_timezone) {
 				$settings_url = admin_url('admin.php?page=wsm_settings');
-				$dismiss_url  = add_query_arg('wsm_dismiss_timezone_notice', '1');
+				$dismiss_url  = wp_nonce_url(add_query_arg('wsm_dismiss_timezone_notice', '1'), 'wsm_dismiss_timezone_notice', 'wsm_tz_nonce');
 
-				// Check if the user dismissed the notice
-				if (isset($_GET['wsm_dismiss_timezone_notice'])) {
+				// Check if the user dismissed the notice (nonce: CSRF protection)
+				if (isset($_GET['wsm_dismiss_timezone_notice'], $_GET['wsm_tz_nonce']) && wp_verify_nonce(sanitize_key(wp_unslash($_GET['wsm_tz_nonce'])), 'wsm_dismiss_timezone_notice')) {
 					update_user_meta(get_current_user_id(), 'wsm_dismiss_timezone_notice', '1');
 					return;
 				}
@@ -261,8 +261,8 @@ if (! class_exists('wsm_free_Notification')) :
 					<img src="<?php echo esc_url($wsm_icon_path); ?>" alt="">
 				</div>
 				<div class="wsm_free_review-text">
-					<h3><?php _e('Leave A Review?', 'wp-stats-manager') ?></h3>
-					<p><?php _e('We hope you\'ve enjoyed using Visitor Statistics :) Would you mind taking a few minutes to write a review on WordPress.org?<br>Just writing simple "thank you" will make us happy!', 'wp-stats-manager') ?></p>
+					<h3><?php _e('Leave a Review?', 'wp-stats-manager') ?></h3>
+					<p><?php _e('We hope you\'ve enjoyed using Visitor Statistics :) Would you mind taking a few minutes to write a review on WordPress.org?<br>Just writing a simple "thank you" will make us happy!', 'wp-stats-manager') ?></p>
 					<ul class="wsm_free_review-ul">
 						<li><a href="<?php echo esc_url($wsm_rating_url); ?>" target="_blank"><span class="dashicons dashicons-external"></span><?php _e('Sure! I\'d love to!', 'wp-stats-manager') ?></a></li>
 						<li><a href="<?php echo esc_url($dismiss_url); ?>"><span class="dashicons dashicons-smiley"></span><?php _e('I\'ve already left a review', 'wp-stats-manager') ?></a></li>

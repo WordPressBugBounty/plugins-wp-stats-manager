@@ -33,7 +33,12 @@ class wsmRequests{
            // header('Content-type: ' . "image/jpeg");
             die;
         }else if($action==='wmcAutoCron'){
-            wsmInitPlugin::wsm_fnCreateImportantViews();
+            // SECURITY: public URL, so rebuild the (expensive) views at most once a day,
+            // the same condition wsm_plugin_init() uses. A short lock stops parallel rebuilds.
+            if(get_option(WSM_PREFIX.'_dailyReportedTime')!=wsmGetCurrentDateByTimeZone('Y-m-d') && !get_transient(WSM_PREFIX.'_autoCronLock')){
+                set_transient(WSM_PREFIX.'_autoCronLock',1,300);
+                wsmInitPlugin::wsm_fnCreateImportantViews();
+            }
             //$this->fnGenerateDailyReports();
             die;
         }
@@ -318,7 +323,7 @@ class wsmRequests{
             $oID=0;
             if($arrTemp[0]!=''){
                 $oID=$this->objDatabase->fnGetOSIDByTitle($arrTemp[0]);
-				if( $arrTemp[0] == 'Windows' ){
+				if( $arrTemp[0] == 'Windows' && isset($arrTemp[1]) ){
 					$oID=$this->objDatabase->fnGetOSIDByTitle($arrTemp[0].' '.$arrTemp[1]);
 				}
             }

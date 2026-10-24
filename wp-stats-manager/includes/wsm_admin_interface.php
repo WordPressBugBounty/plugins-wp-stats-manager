@@ -23,7 +23,7 @@ class wsmAdminInterface
 
     function fnPrintTitle($title)
     {
-        return '<h1 class="wsmHead">' . WSM_NAME . '</h1>' . $this->fnPrintHeader($title) . '
+        return '<h1 class="wsmHead">' . WSM_NAME . '</h1>' . $this->fnShowSiteStats(false) . $this->fnPrintHeader($title) . '
 		
 			<script>
 function wsm_dismiss_notice()
@@ -97,7 +97,7 @@ function wsm_dismiss_notice()
 
         $current = $current == '' ? 'RefSites' : $current;
         $class = $current == 'RefSites' ? 'class="active"' : '';
-        $header .= '<ul class="wmsSubList sublisthover"><li><a href="' . admin_url('admin.php?page=' . WSM_PREFIX . '_trafficsrc&subPage=RefSites') . '" ' . $class . '>' . __('Refering Sites', 'wp-stats-manager') . '</a></li>';
+        $header .= '<ul class="wmsSubList sublisthover"><li><a href="' . admin_url('admin.php?page=' . WSM_PREFIX . '_trafficsrc&subPage=RefSites') . '" ' . $class . '>' . __('Referring Sites', 'wp-stats-manager') . '</a></li>';
 
         $current = $current == '' ? 'SearchEngines' : $current;
         $class = $current == 'SearchEngines' ? 'class="active"' : '';
@@ -141,7 +141,7 @@ function wsm_dismiss_notice()
         $header .= '</li>';
 
         $class = $active == 'Addons' ? 'class="active"' : '';
-        $header .= '<li><a style="background-color:#2196F3; color:white" href="' . admin_url('admin.php?page=' . WSM_PREFIX . '_addons') . '" ' . $class . '>' . __('Add ons', 'wp-stats-manager') . '</a></li>';
+        $header .= '<li><a style="background-color:#2196F3; color:white" href="' . admin_url('admin.php?page=' . WSM_PREFIX . '_addons') . '" ' . $class . '>' . __('Add-ons', 'wp-stats-manager') . '</a></li>';
 
         $header .= '<li><a href="http://plugins-market.com/product/visitor-statistics-pro/#upgrade" ' . $class . ' target="_blank" style="background-color:green; color:white">' . __('Upgrade to Pro', 'wp-stats-manager') . '</a>';
         $header .= '</li>';
@@ -165,7 +165,7 @@ function wsm_dismiss_notice()
                 $browsingPages = $this->objDatabase->fnGetTotalBrowsingPages();
                 $subTab = isset($wsmRequestArray['subTab']) && $wsmRequestArray['subTab'] != '' ? $wsmRequestArray['subTab'] : '';
 
-                $header .= '<div class="wsmTopTitle"><span class="wsmOnline">' . __('Users Online', 'wp-stats-manager') . '&nbsp;:&nbsp;<b>' . $onlineVisitors . '</b></span><span class="wsmBrowsing">' . __('Browing', 'wp-stats-manager') . ':&nbsp;<b>' . $browsingPages . '</b>&nbsp;' . __('pages', 'wp-stats-manager') . '</span></div>';
+                $header .= '<div class="wsmTopTitle"><span class="wsmOnline">' . __('Users Online', 'wp-stats-manager') . '&nbsp;:&nbsp;<b>' . $onlineVisitors . '</b></span><span class="wsmBrowsing">' . __('Browsing', 'wp-stats-manager') . ':&nbsp;<b>' . $browsingPages . '</b>&nbsp;' . __('pages', 'wp-stats-manager') . '</span></div>';
                 $subClass = $subTab == 'summary' ? 'class="active"' : '';
                 $header .= '<ul class="wmsTabList wsmSubTabList">
                             <li><a href="' . admin_url('admin.php?page=' . WSM_PREFIX . '_traffic') . '&subPage=UsersOnline&subTab=summary" ' . $subClass . '>' . __('Summary', 'wp-stats-manager') . '</a></li>';
@@ -186,7 +186,7 @@ function wsm_dismiss_notice()
             $header .= '<ul class="wmsSubList">';
             $current = $current == '' ? 'RefSites' : $current;
             $class = $current == 'RefSites' ? 'class="active"' : '';
-            $header .= '<li><a href="' . admin_url('admin.php?page=' . WSM_PREFIX . '_trafficsrc') . '&subPage=RefSites" ' . $class . '>' . __('Refering Sites', 'wp-stats-manager') . '</a></li>';
+            $header .= '<li><a href="' . admin_url('admin.php?page=' . WSM_PREFIX . '_trafficsrc') . '&subPage=RefSites" ' . $class . '>' . __('Referring Sites', 'wp-stats-manager') . '</a></li>';
             $class = $current == 'SearchEngines' ? 'class="active"' : '';
             $header .= '<li><a  ' . $this->wsm_upgrade_to_pro() . ' href="#"  ' . $class . '>' . __('Search Engines', 'wp-stats-manager') . '</a></li>';
             $class = $current == 'SearchKeywords' ? 'class="active"' : '';
@@ -315,8 +315,9 @@ function wsm_dismiss_notice()
         if (!current_user_can('manage_options')) {
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
-        echo  do_shortcode("[" . WSM_PREFIX . "_showLastDaysStats]");
-        echo  do_shortcode("[" . WSM_PREFIX . "_showLastDaysStatsChart id='LastDaysChart2']");
+        // Summary "Last 7 Days" box: totals and chart follow the period filter.
+        echo  do_shortcode("[" . WSM_PREFIX . "_showLastDaysStats filter='yes']");
+        echo  do_shortcode("[" . WSM_PREFIX . "_showLastDaysStatsChart id='LastDaysChart2' filter='yes']");
         //echo $html;
     }
     function fnShowGeoLocationChart()
@@ -445,78 +446,149 @@ function wsm_dismiss_notice()
         }
         echo do_shortcode("[" . WSM_PREFIX . "_showTitleCloud]");
     }
+    /**
+     * Site totals boxes (Users Online / Total Page Views / Total Visitors / Total Unique Visitors).
+     */
+    function fnShowSiteStats($echo = true)
+    {
+        if (!$echo) {
+            return do_shortcode("[" . WSM_PREFIX . "_showSiteStats]");
+        }
+        echo do_shortcode("[" . WSM_PREFIX . "_showSiteStats]");
+    }
+    /**
+     * "Recent Visitor By IP" (Pro feature): the Pro layout with an illustrative SAMPLE under a blur and an
+     * upgrade overlay. No real visitor is ever printed here (the blur can be removed in the browser);
+     * the IPs are documentation addresses (RFC 5737).
+     */
+    function fnShowRecentVisitorsByIpLocked()
+    {
+        if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
+        $sample = array(
+            array('203.0.113', 'us', 'United States', 'New York'),
+            array('198.51.100', 'gb', 'United Kingdom', 'London'),
+            array('192.0.2', 'de', 'Germany', 'Berlin'),
+            array('203.0.113', 'in', 'India', 'Mumbai'),
+            array('198.51.100', 'fr', 'France', 'Paris'),
+            array('192.0.2', 'ca', 'Canada', 'Toronto'),
+            array('203.0.113', 'eg', 'Egypt', 'Cairo'),
+            array('198.51.100', 'br', 'Brazil', 'Sao Paulo'),
+            array('192.0.2', 'au', 'Australia', 'Sydney'),
+            array('203.0.113', 'jp', 'Japan', 'Tokyo'),
+        );
+        $now = strtotime(wsmGetCurrentDateByTimeZone('Y-m-d H:i:s'));
+        $rows = '';
+        foreach ($sample as $i => $s) {
+            $time = date('d M Y @ h:i A', $now - ($i * 7 + 2) * 60);
+            $rows .= '<tr><td class="ip">' . esc_html($s[0] . '.***') . '</td><td><img src="' . esc_url(WSM_URL . 'images/ICO_1px.gif') . '" class="flag flag-' . esc_attr($s[1]) . '" alt="" />' . esc_html($s[2]) . '</td><td>' . esc_html($s[3]) . '</td><td>' . esc_html($time) . '</td></tr>';
+        }
+        $lockIcon = '<span class="wsm-lock-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="11" width="14" height="9" rx="2" stroke="#fff" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="#fff" stroke-width="2"/></svg></span>';
+        echo '<div class="wsm-locked wsm-ip-locked">'
+            . '<div class="wsm-locked-overlay">' . $lockIcon
+            . '<div class="wsm-locked-title">' . esc_html__('See your recent visitors by IP', 'wp-stats-manager') . '</div>'
+            . '<div class="wsm-locked-sub">' . esc_html__('Pro lists every recent visitor by IP address with country, city and time, with search and the pages each visitor viewed.', 'wp-stats-manager') . '</div>'
+            . '<a class="wsm-locked-btn" target="_blank" rel="noopener" href="' . esc_url('https://www.plugins-market.com/product/visitor-statistics-pro/') . '">' . esc_html__('Upgrade to PRO', 'wp-stats-manager') . '</a></div>'
+            . '<div class="wsm-locked-data" aria-hidden="true" style="filter:blur(3px);pointer-events:none">'
+            . '<div class="wsm-ip-search">' . esc_html__('Search By IP/Country/City', 'wp-stats-manager') . ' <input type="text" disabled="disabled" tabindex="-1" /> <span class="wsm-ip-btn">' . esc_html__('Search', 'wp-stats-manager') . '</span></div>'
+            . '<table class="wsm-ip-table"><thead><tr><th>' . esc_html__('IP Address', 'wp-stats-manager') . '</th><th>' . esc_html__('Country', 'wp-stats-manager') . '</th><th>' . esc_html__('City', 'wp-stats-manager') . '</th><th>' . esc_html__('Time', 'wp-stats-manager') . '</th></tr></thead><tbody>' . $rows . '</tbody></table>'
+            . '<div class="wsm-ip-pages"><span class="cur">1</span><span>2</span><span>3</span><span>&hellip;</span><span>48</span><span>&raquo;</span></div>'
+            . '</div></div>';
+    }
+    function fnShowTotalVisitorsGeo()
+    {
+        if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
+        // "Visitors by Country" map; every value in it is escaped by wsmRenderCountryMap().
+        echo wsmRenderCountryMap('today');
+    }
     function wsmSavePluginSettings()
     {
         if (!current_user_can('manage_options')) {
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
-        $tzstring = get_option('wsmTimezoneString');
-
-        if (null !== (sanitize_text_field($_POST[WSM_PREFIX . 'TimezoneString'])) && sanitize_text_field($_POST[WSM_PREFIX . 'TimezoneString']) != '') {
-            //if($tzstring!==$_POST[WSM_PREFIX.'TimezoneString']){
-            update_option(WSM_PREFIX . 'TimezoneString', sanitize_text_field($_POST[WSM_PREFIX . 'TimezoneString']));
+        $tzstring = $this->wsmPostedText(WSM_PREFIX . 'TimezoneString');
+        // Same values as wp_timezone_choice(): a timezone identifier or a manual "UTC+5.5" offset.
+        if ($tzstring != '' && (in_array($tzstring, DateTimeZone::listIdentifiers(DateTimeZone::ALL_WITH_BC), true) || preg_match('/^UTC([+-]\d{1,2}(\.\d{1,2})?)?$/', $tzstring))) {
+            update_option(WSM_PREFIX . 'TimezoneString', $tzstring);
             wsmInitPlugin::wsm_fnCreateImportantViews();
             wsmInitPlugin::wsm_createMonthWiseViews();
-            //}
         }
-        if (null !== (sanitize_text_field($_POST[WSM_PREFIX . 'ChartDays'])) && sanitize_text_field($_POST[WSM_PREFIX . 'ChartDays']) != '') {
-            update_option(WSM_PREFIX . 'ChartDays', sanitize_text_field($_POST[WSM_PREFIX . 'ChartDays']));
+        $chartDays = $this->wsmPostedText(WSM_PREFIX . 'ChartDays');
+        if (in_array($chartDays, array('15', '30', '45', '60'), true)) {
+            update_option(WSM_PREFIX . 'ChartDays', $chartDays);
         }
-        if (null !== (sanitize_text_field($_POST[WSM_PREFIX . 'Country'])) && sanitize_text_field($_POST[WSM_PREFIX . 'Country']) != '') {
-            update_option(WSM_PREFIX . 'Country', sanitize_text_field($_POST[WSM_PREFIX . 'Country']));
+        $country = $this->wsmPostedText(WSM_PREFIX . 'Country');
+        if (preg_match('/^[A-Z]{2}$/', $country)) {
+            update_option(WSM_PREFIX . 'Country', $country);
         }
-
-        if (null !== (sanitize_text_field($_POST[WSM_PREFIX . 'ArchiveDays'])) && sanitize_text_field($_POST[WSM_PREFIX . 'ArchiveDays']) != '') {
-            update_option(WSM_PREFIX . 'ArchiveDays', sanitize_text_field($_POST[WSM_PREFIX . 'ArchiveDays']));
+        $archiveDays = $this->wsmPostedText(WSM_PREFIX . 'ArchiveDays');
+        if (in_array($archiveDays, array('30', '60', '90', '180'), true)) {
+            update_option(WSM_PREFIX . 'ArchiveDays', $archiveDays);
         }
-        if (null !== (sanitize_text_field($_POST[WSM_PREFIX . 'KeepData'])) && sanitize_text_field($_POST[WSM_PREFIX . 'KeepData']) != '') {
+        if ($this->wsmPostedText(WSM_PREFIX . 'KeepData') != '') {
             update_option(WSM_PREFIX . 'KeepData', "1");
         } else
             update_option(WSM_PREFIX . 'KeepData', "0");
 
-        update_option(WSM_PREFIX . 'ReportScheduleTime', sanitize_text_field($_POST[WSM_PREFIX . 'ReportScheduleTime']));
+        update_option(WSM_PREFIX . 'ReportScheduleTime', $this->wsmPostedText(WSM_PREFIX . 'ReportScheduleTime'));
 
         //	update_option(WSM_PREFIX.'ReportEmails',sanitize_text_field($_POST[WSM_PREFIX.'ReportEmails']));
-        update_option(WSM_PREFIX . 'SiteDashboardNormalWidgets', sanitize_text_field($_POST[WSM_PREFIX . 'SiteDashboardNormalWidgets']));
-        update_option(WSM_PREFIX . 'SiteDashboardSideWidgets', sanitize_text_field($_POST[WSM_PREFIX . 'SiteDashboardSideWidgets']));
+        update_option(WSM_PREFIX . 'SiteDashboardNormalWidgets', $this->wsmPostedText(WSM_PREFIX . 'SiteDashboardNormalWidgets'));
+        update_option(WSM_PREFIX . 'SiteDashboardSideWidgets', $this->wsmPostedText(WSM_PREFIX . 'SiteDashboardSideWidgets'));
 
-        update_option(WSM_PREFIX . 'SitePluginNormalWidgets', sanitize_text_field($_POST[WSM_PREFIX . 'SitePluginNormalWidgets']));
-        update_option(WSM_PREFIX . 'SitePluginSideWidgets', sanitize_text_field($_POST[WSM_PREFIX . 'SitePluginSideWidgets']));
+        update_option(WSM_PREFIX . 'SitePluginNormalWidgets', $this->wsmPostedText(WSM_PREFIX . 'SitePluginNormalWidgets'));
+        update_option(WSM_PREFIX . 'SitePluginSideWidgets', $this->wsmPostedText(WSM_PREFIX . 'SitePluginSideWidgets'));
 
 
         if (is_admin()) {
-            if (!empty($_POST[WSM_PREFIX . 'UserRoles'])) {
-                $wsmUserRoles = '';
-                foreach ($_POST[WSM_PREFIX . 'UserRoles'] as $v) {
-                    $wsmUserRoles .= $v . ",";
-                }
-
-                $wsmUserRoles = substr($wsmUserRoles, 0, -1);
-                @update_option(WSM_PREFIX . 'UserRoles', $wsmUserRoles);
+            $wsmUserRoles = $this->wsmPostedList(WSM_PREFIX . 'UserRoles', 'sanitize_key');
+            if ($wsmUserRoles != '') {
+                update_option(WSM_PREFIX . 'UserRoles', $wsmUserRoles);
             }
 
-            if (!empty($_POST[WSM_PREFIX . 'UserRolesExcluding'])) {
-                $wsmUserRoles = '';
-                foreach ($_POST[WSM_PREFIX . 'UserRolesExcluding'] as $v) {
-                    $wsmUserRoles .= $v . ",";
-                }
+            update_option(WSM_PREFIX . 'UserRolesExcluding', $this->wsmPostedList(WSM_PREFIX . 'UserRolesExcluding', 'sanitize_key'));
 
-                $wsmUserRoles = substr($wsmUserRoles, 0, -1);
-                @update_option(WSM_PREFIX . 'UserRolesExcluding', $wsmUserRoles);
-            } else {
-                @update_option(WSM_PREFIX . 'UserRolesExcluding', '');
-            }
-
-            if (!empty($_POST[WSM_PREFIX . 'Robots'])) {
-                $wsmRobots = '';
-                foreach ($_POST[WSM_PREFIX . 'Robots'] as $v2) {
-                    $wsmRobots .= $v2 . ",";
-                }
-
-                $wsmRobots = substr($wsmRobots, 0, -1);
-                @update_option(WSM_PREFIX . 'Robots', $wsmRobots);
+            $wsmRobots = $this->wsmPostedList(WSM_PREFIX . 'Robots', 'sanitize_text_field');
+            if ($wsmRobots != '') {
+                update_option(WSM_PREFIX . 'Robots', $wsmRobots);
             }
         }
+    }
+
+    /**
+     * One posted settings field as plain text ('' when missing).
+     */
+    function wsmPostedText($name)
+    {
+        if (!isset($_POST[$name]) || !is_scalar($_POST[$name])) {
+            return '';
+        }
+        return sanitize_text_field(wp_unslash($_POST[$name]));
+    }
+
+    /**
+     * A posted multi-select as the comma separated list stored in the options.
+     * Commas are removed from each value so the list cannot be split differently.
+     */
+    function wsmPostedList($name, $sanitizer)
+    {
+        if (empty($_POST[$name]) || !is_array($_POST[$name])) {
+            return '';
+        }
+        $values = array();
+        foreach (wp_unslash($_POST[$name]) as $value) {
+            if (!is_scalar($value)) {
+                continue;
+            }
+            $value = str_replace(',', '', call_user_func($sanitizer, $value));
+            if ($value !== '') {
+                $values[] = $value;
+            }
+        }
+        return implode(',', $values);
     }
     function wsmViewAddOns()
     {
@@ -613,7 +685,7 @@ function wsm_dismiss_notice()
             echo '</div>';
             echo '<input type="hidden" name="tab-li-active" id="tab-li-active" value="">';
             echo '<input type="hidden" name="action" value="save_wsm_addons" />';
-            echo sprintf('<p class="submit"><input type="submit" class="button button-primary" value="%s"></p>', __('Save changes', 'wp-stats-manager'));
+            echo sprintf('<p class="submit"><input type="submit" class="button button-primary" value="%s"></p>', __('Save Changes', 'wp-stats-manager'));
             echo '</form>';
         } else {
             echo __('<p><br /><i style="color:red">No addons installed yet.</i></p><p><table border="0" cellpadding="20px"><tr><td><a href="http://plugins-market.com/product/post-stats-add-on/" target="_blank"><img src="http://plugins-market.com/wp-content/uploads/2018/04/poststats-addon.png" width="150px"></a></td><td><a href="http://plugins-market.com/product/visitor-statistics-mini-chart-add-on/" target="_blank"><img src="http://plugins-market.com/wp-content/uploads/2018/04/minichart-addon.png" width="150px"></a></td></tr></table></p>', 'wp-stats-manager');
@@ -628,6 +700,8 @@ function wsm_dismiss_notice()
         global $wsmAdminJavaScript, $wsmAdminPageHooks;
         if (isset($_POST[WSM_PREFIX . '_form'])) {
             if (null !== (sanitize_text_field($_POST[WSM_PREFIX . '_form'])) && sanitize_text_field($_POST[WSM_PREFIX . '_form']) == WSM_PREFIX . '_frmSettings') {
+                // SECURITY: CSRF protection, the form carries wsm_settings_nonce.
+                check_admin_referer('wsm_save_settings', 'wsm_settings_nonce');
                 $this->wsmSavePluginSettings();
             }
         }
@@ -685,11 +759,11 @@ function wsm_dismiss_notice()
             'search_engine_stats'    =>    __('Top Search Engine Stats', 'wp-stats-manager'),
             'traffic_by_title_stats' => __('Title Stats', 'wp-stats-manager'),
             'top_search_engine_stats' => __('Top Search Engine Stats', 'wp-stats-manager'),
-            'os_wise_visitor_stats'    =>    __('OS base Visitor Stats', 'wp-stats-manager'),
-            'browser_wise_visitor_stats'    =>    __('Browser base Visitor Stats', 'wp-stats-manager'),
-            'screen_wise_visitor_stats'    =>    __('Screen base Visitor Stats', 'wp-stats-manager'),
-            'country_wise_visitor_stats'    =>    __('Today Countries Stats', 'wp-stats-manager'),
-            'city_wise_visitor_stats'    =>    __('Today Cities Stats', 'wp-stats-manager'),
+            'os_wise_visitor_stats'    =>    __('Visitor Stats by OS', 'wp-stats-manager'),
+            'browser_wise_visitor_stats'    =>    __('Visitor Stats by Browser', 'wp-stats-manager'),
+            'screen_wise_visitor_stats'    =>    __('Visitor Stats by Screen Resolution', 'wp-stats-manager'),
+            'country_wise_visitor_stats'    =>    __('Today\'s Country Stats', 'wp-stats-manager'),
+            'city_wise_visitor_stats'    =>    __('Today\'s City Stats', 'wp-stats-manager'),
             /*'recent_visit_pages' => __('Traffic By Title','wp-stats-manager'),*/
             'recent_active_visitors' => __('Users Online', 'wp-stats-manager')
         );
@@ -763,6 +837,7 @@ function wsm_dismiss_notice()
         //echo 'active'.$_POST['tab-li-active'];
         $html .= '<form name="' . WSM_PREFIX . '_frmSettings" method="post">';
         $html .= '<input type="hidden" name="' . WSM_PREFIX . '_form" value="' . WSM_PREFIX . '_frmSettings">';
+        $html .= wp_nonce_field('wsm_save_settings', 'wsm_settings_nonce', true, false);
         $generalsettings = "active";
         $ipexclusion = $sitedashboard = $report = $summarywidget = $shortcodelist = '';
         $ipexclusion1 = $generalsettings1 = $sitedashboard1 = $report1 = $summarywidget1 = $shortcodelist1 = '';
@@ -810,12 +885,12 @@ function wsm_dismiss_notice()
         $shortCodeData = ob_get_contents();
         ob_clean();
         $html .= '<ul class="li-section">
-					<li><a class="' . $generalsettings . '" href="#generalsettings">' . __('General settings', 'wp-stats-manager') . '</a></li>
+					<li><a class="' . $generalsettings . '" href="#generalsettings">' . __('General Settings', 'wp-stats-manager') . '</a></li>
 					<li><a class="' . $ipexclusion . '" href="#ipexclusion">' . __('IP Exclusion', 'wp-stats-manager') . '</a></li>
 					<li><a class="' . $report . '" href="#" ' . $this->wsm_upgrade_to_pro() . ' >' . __('Email Reports', 'wp-stats-manager') . '</a></li>
-					<li><a class="' . $sitedashboard . '" href="#" ' . $this->wsm_upgrade_to_pro() . '>' . __('Admin dashboard', 'wp-stats-manager') . '</a></li>
+					<li><a class="' . $sitedashboard . '" href="#" ' . $this->wsm_upgrade_to_pro() . '>' . __('Admin Dashboard', 'wp-stats-manager') . '</a></li>
 					<li><a class="' . $summarywidget . '" href="#" ' . $this->wsm_upgrade_to_pro() . '>' . __('Plugin Main Page (statistics dashboard)', 'wp-stats-manager') . '</a></li>
-					<li><a class="' . $shortcodelist . '" href="#" ' . $this->wsm_upgrade_to_pro() . '>' . __('Short-Codes', 'wp-stats-manager') . '</a></li>
+					<li><a class="' . $shortcodelist . '" href="#" ' . $this->wsm_upgrade_to_pro() . '>' . __('Shortcodes', 'wp-stats-manager') . '</a></li>
 				</ul>';
         $html .= '<div class="li-section-table"><table class="form-table" id="generalsettings" ' . $generalsettings1 . '><tbody>
                <tr>
@@ -827,20 +902,20 @@ function wsm_dismiss_notice()
                 <tr>
                     <th scope="row"><label for="' . WSM_PREFIX . 'ChartDays">' . __('Chart Days', 'wp-stats-manager') . '</label></th>
                     <td>' . $this->wsmGetChartDaysDropDown($chartDays) . '
-                    <p class="description">' . __('Choose number of days to show statistics on the summary page.', 'wp-stats-manager') . '</p>
+                    <p class="description">' . __('Choose the number of days to show statistics for on the Summary page.', 'wp-stats-manager') . '</p>
                     </td>
                 </tr>
                 
                 <tr>
                     <th scope="row"><label for="' . WSM_PREFIX . 'ArchiveDays">' . __('Archive Data', 'wp-stats-manager') . '</label></th>
                     <td>' . $this->wsmGetArchiteDaysDropDown($ArchiveDays) . '
-						<p class="description">' . __('You can set archive data setting for 30,60,90 or 180 day.', 'wp-stats-manager') . '</p>
+						<p class="description">' . __('Archive data older than 30, 60, 90 or 180 days.', 'wp-stats-manager') . '</p>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row"><label for="' . WSM_PREFIX . 'KeepData1">' . __('Keep Data', 'wp-stats-manager') . '</label></th>
                     <td>
-						<input type="checkbox" name="' . WSM_PREFIX . 'KeepData" id="' . WSM_PREFIX . 'KeepData" value="1" ' . $KeepDataChk . '/> <label for="' . WSM_PREFIX . 'KeepData">' . __('Keep data after unistalling the plugin?', 'wp-stats-manager') . '</label>
+						<input type="checkbox" name="' . WSM_PREFIX . 'KeepData" id="' . WSM_PREFIX . 'KeepData" value="1" ' . $KeepDataChk . '/> <label for="' . WSM_PREFIX . 'KeepData">' . __('Keep data after uninstalling the plugin?', 'wp-stats-manager') . '</label>
 						<p class="description">' . __('Check to keep data and uncheck to remove data.', 'wp-stats-manager') . '</p>
                     </td>
                 </tr>';
@@ -883,7 +958,7 @@ function wsm_dismiss_notice()
 
 
             $html .= '<tr>
-                    <th scope="row"><label for="' . WSM_PREFIX . 'KeepData1">' . __('Excluding Roles from statistics', 'wp-stats-manager') . '</label></th>
+                    <th scope="row"><label for="' . WSM_PREFIX . 'KeepData1">' . __('Exclude Roles from Statistics', 'wp-stats-manager') . '</label></th>
                     <td>';
             $html .= "<select id='UserRolesExcluding' name='wsmUserRolesExcluding[]' multiple='true' style='width:50%;'>";
 
@@ -1127,19 +1202,19 @@ function wsm_dismiss_notice()
                 <tr>
                     <th scope="row"><label for="' . WSM_PREFIX . 'ReportScheduleTime">' . __('Scheduled Report Time', 'wp-stats-manager') . '</label></th>
                     <td>' . $mailTiming . '
-                    <p class="description">' . __('Select time for receiving report mail.', 'wp-stats-manager') . '</p>
+                    <p class="description">' . __('Select the time to receive the report email.', 'wp-stats-manager') . '</p>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row"><label for="' . WSM_PREFIX . 'ReportStats">' . __('Reports', 'wp-stats-manager') . '</label></th>
                     <td>' . $reportStatsHTML . '
-                    <p class="description">' . __('Select stats type which you want to receive as report in mail.', 'wp-stats-manager') . '</p>
+                    <p class="description">' . __('Select the stats you want to receive in the report email.', 'wp-stats-manager') . '</p>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row"><label for="' . WSM_PREFIX . 'ReportEmails">' . __('Report Notification', 'wp-stats-manager') . '</label></th>
                     <td><textarea cols="50" id="' . WSM_PREFIX . 'ReportEmails" name="' . WSM_PREFIX . 'ReportEmails">' . esc_html($reportEmails) . '</textarea>&nbsp;&nbsp;<a href="#" class="button button-primary send_test_mail">Send Test Mail</a>
-                    <p class="description">' . __('Add more than one email by comma seperator.', 'wp-stats-manager') . '</p>
+                    <p class="description">' . __('Separate multiple emails with commas.', 'wp-stats-manager') . '</p>
                     </td>
                 </tr></tbody></table>
                 <table class="form-table" id="sitedashboard" ' . $sitedashboard1 . '><tbody>
@@ -1148,7 +1223,7 @@ function wsm_dismiss_notice()
                     <td>
 					<div class="site_dashboard_widget_panel"></div>
 					<table><tr><th>' . __('Normal', 'wp-stats-manager') . '</th><th>' . __('Side', 'wp-stats-manager') . '</th></tr><tr><td><ul class="site_dashboard_widget_handler" id="site_dashboard_widget_handler_1">' . $dashboardNormalWidget . '</ul></td><td><ul id="site_dashboard_widget_handler_2" class="site_dashboard_widget_handler">' . $dashboardSideWidget . '</ul></td></tr></table>
-                    <p class="description">' . __('You can drag and drop widget here.', 'wp-stats-manager') . '</p>
+                    <p class="description">' . __('You can drag and drop widgets here.', 'wp-stats-manager') . '</p>
 					<input type="hidden" name="' . WSM_PREFIX . 'SiteDashboardNormalWidgets"  value="" />
 					<input type="hidden" name="' . WSM_PREFIX . 'SiteDashboardSideWidgets" value="" />
                     </td>
@@ -1159,7 +1234,7 @@ function wsm_dismiss_notice()
                     <td>
 					<div class="site_dashboard_widget_panel"></div>
 					<table><tr><th>' . __('Normal', 'wp-stats-manager') . '</th><th>' . __('Side', 'wp-stats-manager') . '</th></tr><tr><td><ul class="site_plugin_widget_handler" id="site_plugin_widget_handler_1">' . $pluginNormalWidget . '</ul></td><td><ul id="site_plugin_widget_handler_2" class="site_plugin_widget_handler">' . $pluginSideWidget . '</ul></td></tr></table>
-                    <p class="description">' . __('You can drag and drop widget here.', 'wp-stats-manager') . '</p>
+                    <p class="description">' . __('You can drag and drop widgets here.', 'wp-stats-manager') . '</p>
 					<input type="hidden" name="' . WSM_PREFIX . 'SitePluginNormalWidgets"  value="" />
 					<input type="hidden" name="' . WSM_PREFIX . 'SitePluginSideWidgets" value="" />
                     </td>
@@ -1174,7 +1249,7 @@ function wsm_dismiss_notice()
 					<div class="shortcode_panel">';
         $html .= $shortCodeData;
         $html .= '</div>
-                    <p class="description">' . __('Shortcode lists are going to display here.', 'wp-stats-manager') . '</p>
+                    <p class="description">' . __('The list of shortcodes is shown here.', 'wp-stats-manager') . '</p>
 					</td>
                 </tr>
                 
@@ -1192,19 +1267,18 @@ function wsm_dismiss_notice()
 						<div id="dashboard-widgets-wrap" class="wsmMetaboxContainer">
 							<div id="dashboard-widgets" class="metabox-holder">
 								<form name="wsmmainMetboxForm" id="wsmmainMetboxForm" method="post">
-									<input id="_wpnonce" name="_wpnonce" value="' . wp_create_nonce('my-nonce') . '" type="hidden"><input type="hidden" name="_wp_http_referer" value="/wp-admin/admin.php?page=wsm_ipexc" />
 									<div id="wsm-postbox-container-1" class="postbox-containe">
 										<div id="bottom-sortables" class="meta-box-sortables ui-sortable">
 											<div id="wsm_ipexc" class="postbox">
 											
 											
 											
-													<h2 class="hndle ui-sortable-handle test"><span>' . __('I.P. Exclution', 'wp-stats-manager') . '</span></h2>					 
+													<h2 class="hndle ui-sortable-handle test"><span>' . __('IP Exclusion', 'wp-stats-manager') . '</span></h2>					 
 													<div class="inside">' . $wsmStatistics->wsm_showIPExclustion('') . '</div>
 											</div>
 										</div>
 									</div>
-									<input type="hidden" id="meta-box-order-nonce" name="meta-box-order-nonce" value="9c03ae7329" /><input type="hidden" id="closedpostboxesnonce" name="closedpostboxesnonce" value="4f4cab2048" />
+									' . wp_nonce_field('meta-box-order', 'meta-box-order-nonce', false, false) . wp_nonce_field('closedpostboxes', 'closedpostboxesnonce', false, false) . '
 								</form>
 							</div>
 						</div>
@@ -1243,8 +1317,9 @@ function wsm_dismiss_notice()
 				
 				jQuery("#ipexclusion").hide();
 				</script>';
-        //echo $html.=$wsmAdminJavaScript.$this->endWrapper;
-        echo wsmInitPlugin::wsm_strip_tags($html .= $wsmAdminJavaScript . $this->endWrapper, true);
+        // $wsmAdminJavaScript is not printed here: it is not wrapped in <script> (it showed as text, e.g. the
+        // site totals boxes' arrLiveStats.push) and wsm_footerScripts() skips the live refresh on this page.
+        echo wsmInitPlugin::wsm_strip_tags($html .= $this->endWrapper, true);
     }
     function wsmGetTimeZoneDropDown($tzstring)
     {
@@ -1345,6 +1420,10 @@ function wsm_dismiss_notice()
         global $wsmAdminPageHooks, $wsmRequestArray, $wp_meta_boxes;
         switch ($layout) {
             case 'Summary':
+                // Full-width row ("Visitors by Country" map).
+                echo '<div id="wsm-postbox-container-1" class="postbox-container">';
+                @do_meta_boxes($wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'top', null);
+                echo '</div>';
                 echo '<div id="wsm-postbox-container-2" class="postbox-container">';
                 @do_meta_boxes($wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'left', null);
                 echo '</div>';

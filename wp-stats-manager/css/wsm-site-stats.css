@@ -1,0 +1,60 @@
+﻿/* Site totals boxes at the top of the plugin pages ([wsm_showSiteStats]). Same styles as Visitor Statistics Pro. */
+.box_widget{position:relative;height:130px;font-family:'Open Sans',sans-serif;color:#fff;font-size:40px;text-align:right;padding-right:10px;padding-top:10px}
+.box_widget .text{font-size:20px}
+.box_widget div{width:100%}
+.site_stats_panel ul{display:flex;width:100%}
+.site_stats_panel ul li{border:0;width:100%;padding-right:0}
+.site_stats_panel ul li:first-child{padding-left:0}
+.site_stats_panel ul li span.text{margin-top:13px;display:block;font-size:11px;text-transform:uppercase;font-weight:700;letter-spacing:.5px}
+.site_stats_panel ul li a{color:inherit;text-decoration:none}
+.site_stats_panel .redBox{background:url(../images/online.png) no-repeat bottom left #e35b5a}
+.site_stats_panel .greenBox{background:url(../images/online-live-25.png) no-repeat bottom left #44b6ae}
+.site_stats_panel .movBox{background:url(../images/visitors.png) no-repeat bottom left #8775a7}
+.site_stats_panel ul li .wsmBoxUPDdataTIP{margin-right:5px}
+.site_stats_panel .box_widget{background:#fff;border-radius:5px;margin-bottom:1rem;position:relative;border:none;color:inherit;text-align:left;padding:1.5rem;height:fit-content;background-position:98% center}
+.site_stats_panel ul li .wsmCounters{float:none;margin-bottom:.5rem}
+.site_stats_panel ul li .wsmCounters span.wsmH2Number{font-size:26px;font-weight:700;margin-bottom:.5rem}
+.site_stats_panel .box_widget.blueBox:after{content:"";background-image:url(../images/visits.png);width:84px;height:84px;background-color:#578ebe;display:block;position:absolute;right:.5rem;top:.5rem;background-repeat:no-repeat;border-radius:100px;background-size:60px auto;background-position:center}
+.site_stats_panel .box_widget.greenBox:after{content:"";background-image:url(../images/online-live-25.png);width:84px;height:84px;background-color:#44b6ae;display:block;position:absolute;right:.5rem;top:.5rem;background-repeat:no-repeat;border-radius:100px;background-size:60px auto;background-position:center}
+.site_stats_panel .box_widget.redBox:after{content:"";background-image:url(../images/online-group.png);width:84px;height:84px;background-color:#e35b5a;display:block;position:absolute;right:.5rem;top:.5rem;background-repeat:no-repeat;border-radius:100px;background-size:60px auto;background-position:center}
+.site_stats_panel .box_widget.pinkBox:after{content:"";background-image:url(../images/online.png);width:84px;height:84px;background-color:rgba(78,43,187,.69);display:block;position:absolute;right:.5rem;top:.5rem;background-repeat:no-repeat;border-radius:100px;background-size:60px auto;background-position:center}
+.site_stats_panel .box_widget.movBox:after{content:"";background-image:url(../images/visitors.png);width:84px;height:84px;background-color:#8775a7;display:block;position:absolute;right:.5rem;top:.5rem;background-repeat:no-repeat;border-radius:100px;background-size:60px auto;background-position:center}
+.site_stats_panel .box_widget.greenBox .text{color:#44b6ae}
+.site_stats_panel .box_widget.blueBox .text{color:#578ebe}
+.site_stats_panel .box_widget.redBox .text{color:#e35b5a}
+.site_stats_panel .box_widget.pinkBox .text{color:rgba(78,43,187,.69)}
+.site_stats_panel .box_widget.movBox .text{color:#8775a7}
+@media (max-width:1199px){.site_stats_panel ul{flex-wrap:wrap!important}}
+@media (min-width:992px) and (max-width:1199px){.site_stats_panel .box_widget.blueBox:after,.site_stats_panel .box_widget.greenBox:after,.site_stats_panel .box_widget.movBox:after,.site_stats_panel .box_widget.pinkBox:after,.site_stats_panel .box_widget.redBox:after{width:70px;height:70px;background-size:40px auto}.site_stats_panel .box_widget{height:80px;display:flex;flex-direction:column;justify-content:space-between}.site_stats_panel ul li span.text{margin-top:30px;font-size:10px}.site_stats_panel ul li{width:33.33%;padding:0 15px!important}}
+@media(min-width:768px) and (max-width:991px){.site_stats_panel .box_widget.blueBox:after,.site_stats_panel .box_widget.greenBox:after,.site_stats_panel .box_widget.movBox:after,.site_stats_panel .box_widget.pinkBox:after,.site_stats_panel .box_widget.redBox:after{width:60px;height:60px;background-size:40px auto}.site_stats_panel ul li span.text{margin-top:20px;font-size:10px}.site_stats_panel .box_widget{height:50px}.site_stats_panel ul li{width:33.33%;padding:0 15px!important}.site_stats_panel .box_widget{padding:.5em}}
+@media(max-width:767px){.site_stats_panel .box_widget.blueBox:after,.site_stats_panel .box_widget.greenBox:after,.site_stats_panel .box_widget.movBox:after,.site_stats_panel .box_widget.pinkBox:after,.site_stats_panel .box_widget.redBox:after{width:50px;height:50px;background-size:30px auto}.site_stats_panel ul li span.text{margin-top:20px;font-size:10px}.site_stats_panel .box_widget{height:60px}.site_stats_panel ul li{width:50%;padding:0 15px!important}.site_stats_panel .box_widget{padding:.5em}}
+.site_stats_panel .wsmOnlineIcon{display:inline-block;width:16px;height:16px;margin-right:4px;vertical-align:-3px;background:url(../images/online-red.gif) no-repeat center}
+/* Period filter of the Summary "Last 7 Days" box. */
+#wsm_lastDaysBox .wsmDaysFilterBar{display:flex;justify-content:flex-start;padding:10px 12px 4px}
+#wsm_lastDaysBox .wsmDaysFilterBar select.wsm_days_filter{min-width:150px;min-height:40px;padding:0 32px 0 12px;font-size:14px;border:1px solid #8c8f94;border-radius:4px;background-color:#fff}
+/* Locked Pro features (free version): an illustrative SAMPLE under a blur, with an upgrade overlay.
+   Same approach as the wp-buy free plugin - real data is never put behind the blur. */
+.wsm-locked{position:relative;overflow:hidden;border-radius:10px}
+.wsm-locked-data{filter:blur(3px);opacity:.8;pointer-events:none;user-select:none}
+.wsm-locked-overlay{position:absolute;inset:0;z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.55) 45%,rgba(255,255,255,.75) 100%)}
+.wsm-lock-icon{width:46px;height:46px;border-radius:50%;background:#2271b1;display:flex;align-items:center;justify-content:center;margin-bottom:12px;box-shadow:0 6px 16px rgba(34,113,177,.32),0 0 0 6px rgba(255,255,255,.7)}
+.wsm-locked-title{font-size:16px;font-weight:700;color:#1d2327;margin-bottom:6px;max-width:380px;background:rgba(255,255,255,.85);padding:4px 12px;border-radius:6px}
+.wsm-locked-sub{font-size:13px;line-height:1.55;color:#3c434a;max-width:380px;margin-bottom:16px;background:rgba(255,255,255,.85);padding:4px 12px;border-radius:6px}
+.wsm-locked-btn{display:inline-block;background:#008000;color:#fff!important;font-size:14px;font-weight:700;text-decoration:none;padding:10px 22px;border-radius:8px;box-shadow:0 4px 12px rgba(0,128,0,.3);transition:transform .15s ease,background .15s ease}
+.wsm-locked-btn:hover,.wsm-locked-btn:focus{background:#006400;color:#fff!important;transform:translateY(-1px)}
+.wsm-cmap-locked{min-height:300px}
+.wsm-cmap-locked .leaflet-control-container{display:none}
+/* "Recent Visitor By IP" sample */
+.wsm-ip-locked{min-height:420px;border-radius:0}
+.wsm-ip-search{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;background:#f6f7f7;font-weight:600;font-size:13px}
+.wsm-ip-search input{width:210px;height:30px;border:1px solid #8c8f94;border-radius:3px;background:#fff}
+.wsm-ip-search span.wsm-ip-btn{display:inline-block;background:#0073aa;color:#fff;padding:6px 14px;border-radius:3px;font-weight:600}
+.wsm-ip-table{width:100%;border-collapse:collapse;font-size:13px}
+.wsm-ip-table th{text-align:left;font-weight:600;color:#1d2327;padding:10px 12px;border-bottom:1px solid #e2e4e7}
+.wsm-ip-table td{padding:10px 12px;border-bottom:1px solid #f0f0f1;color:#1d2327}
+.wsm-ip-table tr:nth-child(even) td{background:#f9f9f9}
+.wsm-ip-table td.ip{color:#2271b1;text-decoration:underline}
+.wsm-ip-table .flag{margin-right:6px;vertical-align:middle}
+.wsm-ip-pages{display:flex;justify-content:center;gap:4px;padding:14px}
+.wsm-ip-pages span{display:inline-block;min-width:28px;padding:5px 8px;border:1px solid #2271b1;color:#fff;background:#2271b1;text-align:center;font-weight:600}
+.wsm-ip-pages span.cur{background:#fff;color:#2271b1}

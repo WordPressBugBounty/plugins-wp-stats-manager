@@ -5,6 +5,7 @@ include_once(WSM_DIR . '/includes/' . WSM_PREFIX . '_db.php');
 include_once(WSM_DIR . '/includes/' . WSM_PREFIX . '_requests.php');
 include_once(WSM_DIR . '/includes/' . WSM_PREFIX . '_statistics.php');
 include_once(WSM_DIR . '/includes/' . WSM_PREFIX . '_admin_interface.php');
+include_once(WSM_DIR . '/includes/' . WSM_PREFIX . '_country_map.php');
 
 //include_once(WSM_DIR.'/includes/'.WSM_PREFIX.'_cron.php');
 
@@ -30,6 +31,8 @@ class wsmInitPlugin
         add_action('wp_ajax_liveStats', array('wsmInitPlugin', WSM_PREFIX . '_getLiveStats'));
         add_action('wp_ajax_uoSummary', array('wsmInitPlugin', WSM_PREFIX . '_getUOSummary'));
         add_action('wp_ajax_timezoneByCountry', array('wsmInitPlugin', WSM_PREFIX . '_getTimezoneByCountry'));
+        add_action('wp_ajax_liveSiteStats', array('wsmInitPlugin', WSM_PREFIX . '_getSiteLiveStats'));
+        add_action('wp_ajax_' . WSM_PREFIX . 'LastDaysChart', array('wsmInitPlugin', WSM_PREFIX . '_getLastDaysChart'));
         add_action('wp_ajax_refDetails', array('wsmInitPlugin', WSM_PREFIX . '_getReferrerDetails'));
         add_action('wp_ajax_refUrlDetails', array('wsmInitPlugin', WSM_PREFIX . '_getReferrerUrlDetails'));
         add_action('wp_ajax_getReferralOSDetails', array('wsmInitPlugin', WSM_PREFIX . '_getReferralOSDetails'));
@@ -91,7 +94,6 @@ class wsmInitPlugin
                 'data-colors' => array(),
                 'data-totalpageviews' => array(),
                 'data-tdays' => array(),
-                'data-graph' => array(),
                 'data-referrak_param' => array(),
                 'data-firsttimevisitors' => array(),
                 'aria-describedby'  => array(),
@@ -610,8 +612,22 @@ class wsmInitPlugin
             $arrRequest = json_decode($arrRequest);
             $oDays = get_option(WSM_PREFIX . 'ChartDays');
             $nDays = ($oDays != '' && $oDays > 0) ? $oDays : 60;
+            // Summary "Last 7 Days" box: the totals follow its period filter (sent as days_filter).
+            $lastDaysTotals = null;
+            if (isset($_REQUEST['days_filter']) && is_string($_REQUEST['days_filter']) && $_REQUEST['days_filter'] !== '') {
+                $lastDaysTotals = self::wsmLastDaysTotals(sanitize_text_field(wp_unslash($_REQUEST['days_filter'])));
+            }
+            if (!is_array($arrRequest)) {
+                $arrRequest = array();
+            }
 
             foreach ($arrRequest as $k => $request) {
+
+                $request = is_scalar($request) ? sanitize_text_field($request) : '';
+                if ($lastDaysTotals !== null && isset($lastDaysTotals[$request])) {
+                    $arrResponse[$request] = $lastDaysTotals[$request];
+                    continue;
+                }
 
                 $request = sanitize_text_field($request);
 
@@ -1110,6 +1126,66 @@ class wsmInitPlugin
         }
         wp_die();
     }
+    /**
+     * Totals of the Summary "Last 7 Days" box for a filter period, keyed by the ids of the box.
+     */
+    static function wsmLastDaysTotals($filter)
+    {
+        list($condition, $args) = wsmChartDaysCondition($filter);
+        $pageViews = self::$objDatabase->fnGetTotalPageViewCount($condition, $args);
+        $visitors = self::$objDatabase->fnGetTotalVisitorsCount($condition, $args);
+        return array(
+            WSM_PREFIX . 'LastMonthsTotalPageViews' => number_format_i18n($pageViews, 0),
+            WSM_PREFIX . 'LastMonthsTotalVisitors' => number_format_i18n($visitors, 0),
+            WSM_PREFIX . 'LastMonthsTotalFirstVisitors' => number_format_i18n(self::$objDatabase->fnGetFirstTimeVisitorCount($condition, $args), 0),
+            WSM_PREFIX . 'LastMonthsTotalPagePerViews' => number_format_i18n($visitors > 0 ? $pageViews / $visitors : 0, 2),
+        );
+    }
+    /**
+     * Summary "Last 7 Days" box: chart series + totals of another filter period. Read-only.
+     */
+    static function wsm_getLastDaysChart()
+    {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to view this content.', 'wp-stats-manager' ) ), 403 );
+        }
+        $filter = isset($_POST['days_filter']) && is_string($_POST['days_filter']) ? sanitize_text_field(wp_unslash($_POST['days_filter'])) : '';
+        wp_send_json(array('success' => true, 'data' => array(
+            'chart' => wsmFnLastDaysChartData(self::$objDatabase, $filter),
+            'totals' => self::wsmLastDaysTotals($filter),
+        )));
+    }
+    /**
+     * Site totals boxes ([wsm_showSiteStats]): refreshed values for wsmFnSiteLiveStats. Read-only.
+     */
+    static function wsm_getSiteLiveStats()
+    {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have permission to view this content.', 'wp-stats-manager' ) ), 403 );
+        }
+        $arrResponse = array();
+        $arrRequest = isset($_REQUEST['requests']) && is_string($_REQUEST['requests']) ? json_decode(wp_unslash($_REQUEST['requests'])) : array();
+        if (is_array($arrRequest)) {
+            foreach ($arrRequest as $request) {
+                switch ($request) {
+                    case WSM_PREFIX . 'SiteTotalPageViews':
+                        $arrResponse[$request] = number_format_i18n(self::$objDatabase->fnGetTotalPageViewCount(), 0);
+                        break;
+                    case WSM_PREFIX . 'SiteTotalVisitors':
+                        $arrResponse[$request] = number_format_i18n(self::$objDatabase->fnGetTotalVisitorsCount(), 0);
+                        break;
+                    case WSM_PREFIX . 'SiteTotalFirstVisitors':
+                        $arrResponse[$request] = number_format_i18n(self::$objDatabase->fnGetFirstTimeVisitorCount(), 0);
+                        break;
+                    case WSM_PREFIX . 'SiteUserOnline':
+                        $arrResponse[$request] = number_format_i18n(self::$objDatabase->fnGetTotalVisitorsCount('Online'), 0);
+                        break;
+                }
+            }
+        }
+        echo count($arrResponse) > 0 ? json_encode($arrResponse) : 'No';
+        wp_die();
+    }
     static function wsm_getTimezoneByCountry()
     {
         if ( ! current_user_can( 'manage_options' ) ) {
@@ -1192,12 +1268,22 @@ class wsmInitPlugin
     }
 
 
+    /**
+     * CSRF check for the IP exclusion AJAX actions. The nonce is printed by
+     * [wsm_showIPExclustion] and sent by js/custom_admin.js as wsm_ip_nonce.
+     */
+    static function wsmVerifyIpNonce()
+    {
+        return isset($_POST['wsm_ip_nonce']) && is_string($_POST['wsm_ip_nonce'])
+            && wp_verify_nonce(sanitize_key(wp_unslash($_POST['wsm_ip_nonce'])), 'wsm_ip_exclusion');
+    }
+
     static function wsm_deleteIpAddress()
     {
-        $address = sanitize_text_field($_POST['ip']);
+        $address = isset($_POST['ip']) ? sanitize_text_field(wp_unslash($_POST['ip'])) : '';
 
         // verify the request
-        if (! wp_verify_nonce($_REQUEST['_wpnonce'], 'my-nonce')) {
+        if (! self::wsmVerifyIpNonce()) {
 
             $result['status'] = 0;
             $result['message'] = __('Forbidden!', 'wp-stats-manager');
@@ -1209,7 +1295,7 @@ class wsmInitPlugin
 
         if (! current_user_can('manage_options')) {
             $result['status'] = 0;
-            $result['message'] = __('insufficient privilege!', 'wp-stats-manager');
+            $result['message'] = __('Insufficient privileges!', 'wp-stats-manager');
             echo json_encode($result);
             die();
         }
@@ -1217,6 +1303,9 @@ class wsmInitPlugin
         $result = array();
         try {
             $ipAddresses = get_option('exclusion_ip_address_list');
+            if (!is_array($ipAddresses)) {
+                $ipAddresses = array();
+            }
             unset($ipAddresses[$address]);
             update_option('exclusion_ip_address_list', $ipAddresses);
             $result['status'] = 1;
@@ -1233,7 +1322,7 @@ class wsmInitPlugin
     {
 
         // verify the request
-        if (! wp_verify_nonce($_REQUEST['_wpnonce'], 'my-nonce')) {
+        if (! self::wsmVerifyIpNonce()) {
 
             $result['status'] = 0;
             $result['message'] = __('Forbidden!', 'wp-stats-manager');
@@ -1243,17 +1332,26 @@ class wsmInitPlugin
 
         if (! current_user_can('manage_options')) {
             $result['status'] = 0;
-            $result['message'] = __('insufficient privilege!', 'wp-stats-manager');
+            $result['message'] = __('Insufficient privileges!', 'wp-stats-manager');
             echo json_encode($result);
             die();
         }
 
 
-        $address = sanitize_text_field($_POST['ip']);
-        $status  = sanitize_text_field($_POST['status']);
+        $address = isset($_POST['ip']) ? sanitize_text_field(wp_unslash($_POST['ip'])) : '';
+        $status  = (isset($_POST['status']) && (string) $_POST['status'] === '1') ? 1 : 0;
         $result = array();
+        if (! filter_var($address, FILTER_VALIDATE_IP)) {
+            $result['status'] = 0;
+            $result['message'] = __('Invalid IP address.', 'wp-stats-manager');
+            echo json_encode($result);
+            die();
+        }
         try {
             $ipAddresses = get_option('exclusion_ip_address_list');
+            if (!is_array($ipAddresses)) {
+                $ipAddresses = array();
+            }
             $ipAddresses[$address] = $status;
             update_option('exclusion_ip_address_list', $ipAddresses);
             $result['status'] = 1;
@@ -1270,7 +1368,7 @@ class wsmInitPlugin
     {
 
         // verify the request
-        if (! isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce($_REQUEST['_wpnonce'], 'my-nonce')) {
+        if (! self::wsmVerifyIpNonce()) {
             $result = [
                 'status' => 0,
                 'message' => __('Forbidden! Invalid or missing nonce.', 'wp-stats-manager')
@@ -1507,6 +1605,10 @@ class wsmInitPlugin
         if (strpos($page, WSM_PREFIX) !== false) {
             wp_register_style(WSM_PREFIX . '-custom-admin-style', WSM_URL . 'css/custom_admin.css', false, '3.2');
             wp_enqueue_style(WSM_PREFIX . '-custom-admin-style');
+            // Site totals boxes at the top of the plugin pages ([wsm_showSiteStats]).
+            // Version = file time, so browsers never keep an older copy of these styles after an update.
+            wp_register_style(WSM_PREFIX . '-site-stats-style', WSM_URL . 'css/wsm-site-stats.css', array(WSM_PREFIX . '-custom-admin-style'), (string) @filemtime(WSM_DIR . 'css/wsm-site-stats.css'));
+            wp_enqueue_style(WSM_PREFIX . '-site-stats-style');
 
             wp_register_style(WSM_PREFIX . '-modal', WSM_URL . 'css/jquery.modal.min.css', false, '1.0.0');
             wp_enqueue_style(WSM_PREFIX . '-modal');
@@ -1543,8 +1645,14 @@ class wsmInitPlugin
 
 
 
-        wp_enqueue_script(WSM_PREFIX . '-custom-admin-script', WSM_URL . 'js/custom_admin.js', array('jquery-ui-sortable'), '3.8', true);
+        wp_enqueue_script(WSM_PREFIX . '-custom-admin-script', WSM_URL . 'js/custom_admin.js', array('jquery-ui-sortable'), '4.0', true);
         wp_localize_script(WSM_PREFIX . '-custom-admin-script', WSM_PREFIX . '_ajaxObject', array('ajax_url' => admin_url('admin-ajax.php')));
+
+        // "Visitors by Country" map (Traffic > Summary): scripts registered here, enqueued when the map is rendered.
+        wsmRegisterCountryMapAssets();
+        if ($page == WSM_PREFIX . '_traffic') {
+            wp_enqueue_style(WSM_PREFIX . '_leaflet_css');
+        }
 
         wp_enqueue_script(WSM_PREFIX . '_slimselect', WSM_URL . 'js/slimselect.min.js', '1.0.0', true);
         wp_register_style(WSM_PREFIX . '_slimselect_css', WSM_URL . 'css/slimselect.min.css', false, '1.0.0');
@@ -1606,8 +1714,8 @@ class wsmInitPlugin
         $wsmAdminPageHooks[$menu_slug . '_trafficsrc'] = add_submenu_page($menu_slug, __('Traffic Sources', 'wp-stats-manager'), __('Traffic Sources', 'wp-stats-manager'), $capability, $menu_slug . '_trafficsrc', array(self::$objAdminInterface, WSM_PREFIX . 'ViewTrafficSources'));
         $wsmAdminPageHooks[$menu_slug . '_visitors'] = add_submenu_page($menu_slug, __('Visitors', 'wp-stats-manager'), __('Visitors', 'wp-stats-manager'), $capability, $menu_slug . '_visitors', array(self::$objAdminInterface, WSM_PREFIX . 'ViewVisitors'));
         $wsmAdminPageHooks[$menu_slug . '_content'] = add_submenu_page($menu_slug, __('Content', 'wp-stats-manager'),  __('Content', 'wp-stats-manager'), $capability, $menu_slug . '_content', array(self::$objAdminInterface, WSM_PREFIX . 'ViewContent'));
-        $wsmAdminPageHooks[$menu_slug . '_ipexc'] = add_submenu_page($menu_slug, __('I.P. Exclusion', 'wp-stats-manager'), __('I.P. Exclusion', 'wp-stats-manager'), $capability, $menu_slug . '_ipexc', array(self::$objAdminInterface, WSM_PREFIX . 'ViewIPExclusion'));
-        $wsmAdminPageHooks[$menu_slug . '_addons'] = add_submenu_page($menu_slug, __('Add ons', 'wp-stats-manager'), __('Add ons', 'wp-stats-manager'), $capability, $menu_slug . '_addons', array(self::$objAdminInterface, WSM_PREFIX . 'ViewAddOns'));
+        $wsmAdminPageHooks[$menu_slug . '_ipexc'] = add_submenu_page($menu_slug, __('IP Exclusion', 'wp-stats-manager'), __('IP Exclusion', 'wp-stats-manager'), $capability, $menu_slug . '_ipexc', array(self::$objAdminInterface, WSM_PREFIX . 'ViewIPExclusion'));
+        $wsmAdminPageHooks[$menu_slug . '_addons'] = add_submenu_page($menu_slug, __('Add-ons', 'wp-stats-manager'), __('Add-ons', 'wp-stats-manager'), $capability, $menu_slug . '_addons', array(self::$objAdminInterface, WSM_PREFIX . 'ViewAddOns'));
         $wsmAdminPageHooks[$menu_slug . '_settings'] = add_submenu_page($menu_slug, __('Settings', 'wp-stats-manager'), __('Settings', 'wp-stats-manager'), $capability, $menu_slug . '_settings', array(self::$objAdminInterface, WSM_PREFIX . 'ViewSettings'));
         remove_submenu_page($menu_slug, $menu_slug);
         self::wsm_registerMetaboxes();
@@ -1627,42 +1735,51 @@ class wsmInitPlugin
                 $wsmRequestArray['subPage'] = $currentSubPage;
                 switch ($currentSubPage) {
                     case 'Summary':
-                        add_meta_box(WSM_PREFIX . '_genStats', __('General Stats', 'wp-stats-manager'), array(self::$objAdminInterface, 'fnShowGenStats'), $wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'left', 'high');
-                        $wsmMetaBoxArray[WSM_PREFIX . '_genStats'] = __('General Stats', 'wp-stats-manager');
-                        add_meta_box(WSM_PREFIX . '_geoLocation', __('Top 10 countries', 'wp-stats-manager'), array(self::$objAdminInterface, 'fnShowGeoLocationChart'), $wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'right', 'high');
-                        $wsmMetaBoxArray[WSM_PREFIX . '_geoLocation'] = __('Top 10 countries', 'wp-stats-manager');
+                        // "Operating System Type" (OS / Browser / Screen Resolution pie, same box as Visitors > Browser/OS)
+                        // in place of "General Stats", whose totals are already in the boxes at the top of the page.
+                        add_meta_box(WSM_PREFIX . '_osType', __('Operating System Type', 'wp-stats-manager') . '&nbsp;&nbsp;' . wsmFnGetDateRangeTitle(wsmSanitizeFilteredPostData()), array(self::$objAdminInterface, 'fnShowOsStatBox'), $wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'left', 'high');
+                        $wsmMetaBoxArray[WSM_PREFIX . '_osType'] = __('Operating System Type', 'wp-stats-manager');
+                        add_meta_box(WSM_PREFIX . '_geoLocation', __('Top 10 Countries', 'wp-stats-manager'), array(self::$objAdminInterface, 'fnShowGeoLocationChart'), $wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'right', 'high');
+                        $wsmMetaBoxArray[WSM_PREFIX . '_geoLocation'] = __('Top 10 Countries', 'wp-stats-manager');
                         add_meta_box(WSM_PREFIX . '_todaysStats', __('Today', 'wp-stats-manager') . '&nbsp;&nbsp;' . wsmGetCurrentDateByTimeZone('d M Y ') . ' <span class="currenttime2"></span>', array(self::$objAdminInterface, 'fnShowTodayStats'), $wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'bottom', 'high');
                         $wsmMetaBoxArray[WSM_PREFIX . '_todaysStats'] = __('Today', 'wp-stats-manager');
-                        $nDays = get_option(WSM_PREFIX . 'ChartDays');
-                        $nDays = ($nDays != '' && $nDays > 0) ? (int) $nDays : 30;
-                        add_meta_box(WSM_PREFIX . '_lastDays', __(sprintf('Last %d Days', intval($nDays)), 'wp-stats-manager'), array(self::$objAdminInterface, 'fnShowLastDaysStats'), $wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'bottom', 'low');
-                        $wsmMetaBoxArray[WSM_PREFIX . '_lastDays'] = __('Last 2 Months', 'wp-stats-manager');
+                        // First box of the page: totals + chart of a period chosen with its filter (default "Last 7 Days").
+                        $chartChoices = wsmGetChartDaysChoices();
+                        // New box ids (not "_lastDays" / "total_recent_visitors_geo_0"): an order saved earlier in
+                        // Screen Options must not move them, the period box is always first and the map right after.
+                        add_meta_box(WSM_PREFIX . '_lastDaysBox', $chartChoices[wsmGetDefaultChartDays()], array(self::$objAdminInterface, 'fnShowLastDaysStats'), $wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'top', 'high');
+                        $wsmMetaBoxArray[WSM_PREFIX . '_lastDaysBox'] = __('Last 2 Months', 'wp-stats-manager');
+                        // "Visitors by Country" map: Pro feature, shown locked (sample data, blurred, upgrade button).
+                        add_meta_box(WSM_PREFIX . '_countryMapBox', __('Visitors by Country', 'wp-stats-manager'), array(self::$objAdminInterface, 'fnShowTotalVisitorsGeo'), $wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'top', 'low');
+                        // "Recent Visitor By IP": Pro feature, shown locked like the map.
+                        add_meta_box(WSM_PREFIX . '_recentVisitorsByIpBox', __('Recent Visitors by IP', 'wp-stats-manager'), array(self::$objAdminInterface, 'fnShowRecentVisitorsByIpLocked'), $wsmAdminPageHooks[WSM_PREFIX . '_traffic'], 'bottom', 'low');
 
 
                         $plugin_widget = get_option(WSM_PREFIX . 'Plugin_widget');
                         $report_stats_list = array(
                             'general_stats_new'    =>    __('General Stats', 'wp-stats-manager'),
-                            'daily_stats'    =>    __('Today Stats', 'wp-stats-manager'),
+                            'daily_stats'    =>    __('Today\'s Stats', 'wp-stats-manager'),
                             'referral_website_stats'    =>    __('Referral Website', 'wp-stats-manager'),
-                            'search_engine_stats'    =>    __('Today Search Engines', 'wp-stats-manager'),
+                            'search_engine_stats'    =>    __('Today\'s Search Engines', 'wp-stats-manager'),
                             'traffic_by_title_stats' => __('Title Stats', 'wp-stats-manager'),
                             'top_search_engine_stats' => __('Top Search Engine Summary', 'wp-stats-manager'),
                             'os_wise_visitor_stats'    =>    __('Operating System Stats', 'wp-stats-manager'),
-                            'browser_wise_visitor_stats'    =>    __('Today Browser Stats', 'wp-stats-manager'),
+                            'browser_wise_visitor_stats'    =>    __('Today\'s Browser Stats', 'wp-stats-manager'),
                             'screen_wise_visitor_stats'    =>    __('Screen Resolution Stats', 'wp-stats-manager'),
-                            'country_wise_visitor_stats'    =>    __('Countries Stats (Top 10)', 'wp-stats-manager'),
-                            'city_wise_visitor_stats'    =>    __('Today Cities Stats', 'wp-stats-manager'),
+                            'country_wise_visitor_stats'    =>    __('Country Stats (Top 10)', 'wp-stats-manager'),
+                            'city_wise_visitor_stats'    =>    __('Today\'s City Stats', 'wp-stats-manager'),
                             'recent_visit_pages' => __('Traffic By Title', 'wp-stats-manager'),
                             'recent_active_visitors' => __('Users Online', 'wp-stats-manager'),
-                            'total_recent_visitors_geo' => __('GEO Locations', 'wp-stats-manager')
+                            'total_recent_visitors_geo' => __('Visitors by Country', 'wp-stats-manager')
                         );
                         $default_report_stats_list = array(
-                            'general_stats_new'    =>    array('fnshowGenStats'),
+                            // 'general_stats_new' (saved by Pro): "General Stats" is no longer shown on this page.
                             'daily_stats'    =>    array('fnShowDailyStatBox'),
                             'referral_website_stats'    =>    array('fnShowReffererStatBox'),
                             'search_engine_stats'    =>    array('fnShowReffererSearchEngineStatBox', 'fnShowSearchEngineSummary'),
                             'recent_visit_pages'    =>    array('fnShowRecentVisitedPages'),
                             'recent_active_visitors' => array('fnShowMostActiveVisitorsGeo')
+                            // 'total_recent_visitors_geo' (saved by Pro): the map has its own box above.
                         );
                         if (is_array($plugin_widget)) {
                             //$objWsmScheduledMail = new wsmScheduledMail();
@@ -1790,7 +1907,7 @@ class wsmInitPlugin
                         break;
                     case 'SearchKeywords':
                         $wsmMetaBoxArray[WSM_PREFIX . '_referrerStats'] = __('Search Keywords', 'wp-stats-manager');
-                        add_meta_box(WSM_PREFIX . '_topReferringSites', __('Latest Search Word Statistics', 'wp-stats-manager') . '&nbsp;&nbsp;' . $dateRangeTitle, array(self::$objAdminInterface, 'fnStatsSearchKeywords'), $wsmAdminPageHooks[WSM_PREFIX . '_trafficsrc'], 'bottom', 'high');
+                        add_meta_box(WSM_PREFIX . '_topReferringSites', __('Latest Search Keywords', 'wp-stats-manager') . '&nbsp;&nbsp;' . $dateRangeTitle, array(self::$objAdminInterface, 'fnStatsSearchKeywords'), $wsmAdminPageHooks[WSM_PREFIX . '_trafficsrc'], 'bottom', 'high');
                         break;
                 }
                 break;
@@ -1855,8 +1972,8 @@ class wsmInitPlugin
                 $arrPostData = wsmSanitizeFilteredPostData();
                 $dateRangeTitle = wsmFnGetDateRangeTitle($arrPostData);
                 $wsmRequestArray['subPage'] = 'ipexc';
-                add_meta_box(WSM_PREFIX . '_ipexc', __('I.P. Exclution', 'wp-stats-manager'), array(self::$objAdminInterface, 'fnIPExclusion'), $wsmAdminPageHooks[WSM_PREFIX . '_ipexc'], 'bottom', 'high');
-                $wsmMetaBoxArray[WSM_PREFIX . '_ipexc'] = __('I.P. Exclution', 'wp-stats-manager');
+                add_meta_box(WSM_PREFIX . '_ipexc', __('IP Exclusion', 'wp-stats-manager'), array(self::$objAdminInterface, 'fnIPExclusion'), $wsmAdminPageHooks[WSM_PREFIX . '_ipexc'], 'bottom', 'high');
+                $wsmMetaBoxArray[WSM_PREFIX . '_ipexc'] = __('IP Exclusion', 'wp-stats-manager');
                 break;
             default:
                 $dashboard_widget = get_option(WSM_PREFIX . 'Dashboard_widget');
@@ -1867,11 +1984,11 @@ class wsmInitPlugin
                     'search_engine_stats'    =>    __('Search Engine Stats', 'wp-stats-manager'),
                     'traffic_by_title_stats' => __('Title Stats', 'wp-stats-manager'),
                     'top_search_engine_stats' => __('Top Search Engine Stats', 'wp-stats-manager'),
-                    'os_wise_visitor_stats'    =>    __('OS base Visitor Stats', 'wp-stats-manager'),
-                    'browser_wise_visitor_stats'    =>    __('Browser base Visitor Stats', 'wp-stats-manager'),
-                    'screen_wise_visitor_stats'    =>    __('Screen base Visitor Stats', 'wp-stats-manager'),
-                    'country_wise_visitor_stats'    =>    __('Today Countries Stats', 'wp-stats-manager'),
-                    'city_wise_visitor_stats'    =>    __('Today Cities Stats', 'wp-stats-manager'),
+                    'os_wise_visitor_stats'    =>    __('Visitor Stats by OS', 'wp-stats-manager'),
+                    'browser_wise_visitor_stats'    =>    __('Visitor Stats by Browser', 'wp-stats-manager'),
+                    'screen_wise_visitor_stats'    =>    __('Visitor Stats by Screen Resolution', 'wp-stats-manager'),
+                    'country_wise_visitor_stats'    =>    __('Today\'s Country Stats', 'wp-stats-manager'),
+                    'city_wise_visitor_stats'    =>    __('Today\'s City Stats', 'wp-stats-manager'),
                     'recent_visit_pages' => __('Traffic By Title', 'wp-stats-manager'),
                     'recent_active_visitors' => __('Users Online', 'wp-stats-manager')
                 );
@@ -1882,11 +1999,11 @@ class wsmInitPlugin
                     'search_engine_stats'    =>    __('Search Engine Stats', 'wp-stats-manager'),
                     'traffic_by_title_stats' => __('Title Stats', 'wp-stats-manager'),
                     'top_search_engine_stats' => __('Top Search Engine Stats', 'wp-stats-manager'),
-                    'os_wise_visitor_stats'    =>    __('OS base Visitor Stats', 'wp-stats-manager'),
-                    'browser_wise_visitor_stats'    =>    __('Browser base Visitor Stats', 'wp-stats-manager'),
-                    'screen_wise_visitor_stats'    =>    __('Screen base Visitor Stats', 'wp-stats-manager'),
-                    'country_wise_visitor_stats'    =>    __('Today Countries Stats', 'wp-stats-manager'),
-                    'city_wise_visitor_stats'    =>    __('Today Cities Stats', 'wp-stats-manager'),
+                    'os_wise_visitor_stats'    =>    __('Visitor Stats by OS', 'wp-stats-manager'),
+                    'browser_wise_visitor_stats'    =>    __('Visitor Stats by Browser', 'wp-stats-manager'),
+                    'screen_wise_visitor_stats'    =>    __('Visitor Stats by Screen Resolution', 'wp-stats-manager'),
+                    'country_wise_visitor_stats'    =>    __('Today\'s Country Stats', 'wp-stats-manager'),
+                    'city_wise_visitor_stats'    =>    __('Today\'s City Stats', 'wp-stats-manager'),
                     'recent_visit_pages' => __('Traffic By Title', 'wp-stats-manager'),
                     'recent_active_visitors' => __('Users Online', 'wp-stats-manager')
                 );

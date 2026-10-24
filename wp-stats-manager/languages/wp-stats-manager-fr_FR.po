@@ -68,15 +68,15 @@ msgid "Action"
 msgstr "Action"
 
 #: includes/wsm_admin_interface.php:1028
-msgid "Add more than one email by comma seperator."
-msgstr "Ajoutez plus d'une adresse mail en les séparant avec une virgule."
+msgid "Separate multiple emails with commas."
+msgstr "Séparez plusieurs adresses e-mail par des virgules."
 
 #: includes/wsm_init.php:1235 includes/wsm_admin_interface.php:144
-msgid "Add ons"
+msgid "Add-ons"
 msgstr "Modules"
 
 #: includes/wsm_admin_interface.php:140 includes/wsm_admin_interface.php:691
-msgid "Admin dashboard"
+msgid "Admin Dashboard"
 msgstr "Tableau de bord admin"
 
 #: includes/wsm_functions.php:2692
@@ -109,17 +109,14 @@ msgid "Bounce"
 msgstr "Rebond"
 
 #: includes/wsm_statistics.php:269
-msgid "Bounce Rate (%)"
-msgstr "Taux de rebond&nbsp;(%)"
-
 #: includes/wsm_statistics.php:418 includes/wsm_statistics.php:638
 #: includes/wsm_statistics.php:2242
-msgid "Bounce Rate(%)"
+msgid "Bounce Rate (%)"
 msgstr "Taux de rebond&nbsp;(%)"
 
 #: includes/wsm_admin_interface.php:168
 #| msgid "Browsing"
-msgid "Browing"
+msgid "Browsing"
 msgstr "Navigation en cours"
 
 #: includes/wsm_scheduled_mail.php:365 includes/wsm_scheduled_mail.php:449
@@ -129,8 +126,8 @@ msgstr "Navigateur"
 
 #: includes/wsm_init.php:1493 includes/wsm_init.php:1508
 #: includes/wsm_admin_interface.php:551
-msgid "Browser base Visitor Stats"
-msgstr "Statistiques fondées des navigateurs des visiteurs"
+msgid "Visitor Stats by Browser"
+msgstr "Statistiques des visiteurs par navigateur"
 
 #: includes/wsm_admin_interface.php:117 includes/wsm_admin_interface.php:200
 msgid "Browser/OS/Languages"
@@ -152,10 +149,8 @@ msgstr ""
 "décalage."
 
 #: includes/wsm_admin_interface.php:705
-msgid "Choose number of days to show statistics on the summary page."
-msgstr ""
-"Choisissez le nombre de jours pour lequel montrer les statistiques sur la "
-"page de résumé."
+msgid "Choose the number of days to show statistics for on the Summary page."
+msgstr "Choisissez le nombre de jours pour lequel montrer les statistiques sur la page de résumé."
 
 #: includes/wsm_init.php:1369 includes/wsm_init.php:1370
 #: includes/wsm_scheduled_mail.php:414 includes/wsm_statistics.php:1127
@@ -189,7 +184,7 @@ msgid "Content by URL"
 msgstr ""
 
 #: includes/wsm_init.php:1276
-msgid "Countries Stats (Top 10)"
+msgid "Country Stats (Top 10)"
 msgstr "Statistiques par pays (Top 10)"
 
 #: includes/wsm_init.php:1367 includes/wsm_init.php:1368
@@ -321,7 +316,7 @@ msgid "From"
 msgstr "Depuis"
 
 #: includes/wsm_admin_interface.php:140 includes/wsm_admin_interface.php:688
-msgid "General settings"
+msgid "General Settings"
 msgstr "Paramètres généraux"
 
 #: includes/wsm_init.php:1254 includes/wsm_init.php:1255
@@ -386,23 +381,17 @@ msgid "I've already left a review"
 msgstr "J'ai déjà laissé un avis"
 
 #: includes/wsm_statistics.php:4500
-msgid "I.P. Address"
+msgid "IP Address"
 msgstr "Adresse IP"
-
-#: includes/wsm_init.php:1234
-msgid "I.P. Exclusion"
-msgstr "Exclusion I.P."
-
-#: includes/wsm_init.php:1480 includes/wsm_init.php:1481
-#: includes/wsm_admin_interface.php:1085
-msgid "I.P. Exclution"
-msgstr "Exclusion I.P."
 
 #: includes/wsm_init.php:966
 msgid "ip address is successfully added."
 msgstr "Adresse IP ajoutée avec succès."
 
 #: includes/wsm_admin_interface.php:140 includes/wsm_admin_interface.php:689
+#: includes/wsm_init.php:1234
+#: includes/wsm_init.php:1480 includes/wsm_init.php:1481
+#: includes/wsm_admin_interface.php:1085
 msgid "IP Exclusion"
 msgstr "Exclusion IP"
 
@@ -427,7 +416,7 @@ msgid "Keep Data"
 msgstr "Conserver les données"
 
 #: includes/wsm_admin_interface.php:718
-msgid "Keep data after unistalling the plugin?"
+msgid "Keep data after uninstalling the plugin?"
 msgstr "Conserver les données après avoir désinstallé l'extension?"
 
 #: includes/wsm_statistics.php:536
@@ -475,11 +464,11 @@ msgid "Last Hits Time"
 msgstr "Heure du dernier clic"
 
 #: includes/wsm_init.php:1415
-msgid "Latest Search Word Statistics"
-msgstr "Statistiques des dernières recherches par mot"
+msgid "Latest Search Keywords"
+msgstr "Derniers mots-clés de recherche"
 
 #: notifications.php:141
-msgid "Leave A Review?"
+msgid "Leave a Review?"
 msgstr "Laisser un avis?"
 
 #: includes/wsm_functions.php:2692
@@ -585,8 +574,8 @@ msgstr "Système d'exploitation"
 
 #: includes/wsm_init.php:1492 includes/wsm_init.php:1507
 #: includes/wsm_admin_interface.php:550
-msgid "OS base Visitor Stats"
-msgstr "Statistiques des systèmes d'exploitation des visiteurs"
+msgid "Visitor Stats by OS"
+msgstr "Statistiques des visiteurs par système d'exploitation"
 
 #: includes/wsm_init.php:1432 includes/wsm_init.php:1433
 msgid "OS/Browser/Screen Resolution"
@@ -631,10 +620,8 @@ msgid "pages"
 msgstr "pages"
 
 #: includes/wsm_statistics.php:987
-msgid "Please enter map API key (check the settings page for more details)"
-msgstr ""
-"Veuillez entrer une clé API cartographique (vérifiez la page paramètres pour "
-"plus de détails)"
+msgid "Please enter a map API key (see the Settings page for details)"
+msgstr "Veuillez entrer une clé API cartographique (vérifiez la page paramètres pour plus de détails)"
 
 #: includes/wsm_admin_interface.php:140 includes/wsm_admin_interface.php:692
 msgid "Plugin Main Page (statistics dashboard)"
@@ -692,7 +679,7 @@ msgid "References"
 msgstr "Références"
 
 #: includes/wsm_admin_interface.php:100 includes/wsm_admin_interface.php:189
-msgid "Refering Sites"
+msgid "Referring Sites"
 msgstr "Sites référents"
 
 #: includes/wsm_init.php:1269
@@ -713,7 +700,7 @@ msgid "Referrer Summary"
 msgstr "Résumé des référents"
 
 #: includes/wsm_scheduled_mail.php:333 includes/wsm_statistics.php:2884
-msgid "Referrer url"
+msgid "Referrer URL"
 msgstr "URL du référent"
 
 #: includes/wsm_admin_interface.php:1026
@@ -725,11 +712,8 @@ msgid "Reports"
 msgstr "Rapports"
 
 #: includes/wsm_admin_interface.php:1070
-msgid "Save Changes"
-msgstr "Enregistrer les modifications"
-
 #: includes/wsm_admin_interface.php:483
-msgid "Save changes"
+msgid "Save Changes"
 msgstr "Enregistrer les modifications"
 
 #: includes/wsm_statistics.php:4495
@@ -742,8 +726,8 @@ msgstr "Planification du rapport"
 
 #: includes/wsm_init.php:1494 includes/wsm_init.php:1509
 #: includes/wsm_admin_interface.php:552
-msgid "Screen base Visitor Stats"
-msgstr "Statistiques des résolutions d'écran des visiteurs"
+msgid "Visitor Stats by Screen Resolution"
+msgstr "Statistiques des visiteurs par résolution d'écran"
 
 #: includes/wsm_scheduled_mail.php:377 includes/wsm_db.php:2340
 msgid "Screen Resolution"
@@ -788,14 +772,12 @@ msgid "Select Month"
 msgstr "Choisir le mois"
 
 #: includes/wsm_admin_interface.php:1022
-msgid "Select stats type which you want to receive as report in mail."
-msgstr ""
-"Choisissez le type de statistiques que vous voulez recevoir dans le mail de "
-"rapport."
+msgid "Select the stats you want to receive in the report email."
+msgstr "Choisissez le type de statistiques que vous voulez recevoir dans le mail de rapport."
 
 #: includes/wsm_admin_interface.php:1016
-msgid "Select time for receiving report mail."
-msgstr "Choisissez la fréquence à laquelle recevoir le mail de rapport."
+msgid "Select the time to receive the report email."
+msgstr "Choisissez l'heure de réception du mail de rapport."
 
 #: includes/wsm_statistics.php:1210 includes/wsm_statistics.php:1218
 #: includes/wsm_statistics.php:1223 includes/wsm_statistics.php:1233
@@ -815,19 +797,16 @@ msgstr "Paramètres"
 msgid "Settings saved."
 msgstr "Paramètres enregistrés."
 
-#: includes/wsm_admin_interface.php:140 includes/wsm_admin_interface.php:693
-msgid "Short-Codes"
-msgstr "Codes courts"
-
 #: includes/wsm_shortcodeTable.php:6
 msgid "Shortcode"
 msgstr "Code court"
 
 #: includes/wsm_admin_interface.php:1063
-msgid "Shortcode lists are going to display here."
+msgid "The list of shortcodes is shown here."
 msgstr "La liste des codes courts va s'afficher ici."
 
 #: includes/wsm_admin_interface.php:1056
+#: includes/wsm_admin_interface.php:140 includes/wsm_admin_interface.php:693
 msgid "Shortcodes"
 msgstr "Codes courts"
 
@@ -875,50 +854,40 @@ msgid "Sure! I'd love to!"
 msgstr "Absolument! J'adorerais!"
 
 #: includes/wsm_statistics.php:181 includes/wsm_statistics.php:182
-msgid "than 14 days ago"
-msgstr "/il y a 14 jours"
+msgid "vs. 14 days ago"
+msgstr "vs il y a 14 jours"
 
 #: includes/wsm_statistics.php:181 includes/wsm_statistics.php:182
-msgid "than 7 days ago"
-msgstr "/il y a 7 jours"
+msgid "vs. 7 days ago"
+msgstr "vs il y a 7 jours"
 
 #: includes/wsm_statistics.php:1380
-msgid "The \\\"First\\\" date and \\\"Second\\\" date should not be same."
-msgstr ""
-"Les dates \\\"Premier\\\" et \\\"Second\\\" ne doivent pas être les mêmes."
+msgid "The \\\"First\\\" date and \\\"Second\\\" date should not be the same."
+msgstr "Les dates \\\"Premier\\\" et \\\"Second\\\" ne doivent pas être les mêmes."
 
 #: includes/wsm_statistics.php:1378
 msgid "The \\\"First\\\" date OR \\\"Second\\\" date should not be blank."
 msgstr "La date \\\"Premier\\\" OU \\\"Second\\\" ne doit pas être vide."
 
 #: includes/wsm_statistics.php:1412
-msgid "The \\\"First\\\" Year and \\\"Second\\\" Year should not be same."
-msgstr ""
-"L'année \\\"Premier\\\" et \\\"Second\\\" ne doivent pas être les mêmes."
+msgid "The \\\"First\\\" Year and \\\"Second\\\" Year should not be the same."
+msgstr "L'année \\\"Premier\\\" et \\\"Second\\\" ne doivent pas être les mêmes."
 
 #: includes/wsm_statistics.php:1396
-msgid ""
-"The \\\"First\\\" Year-Month and \\\"Second\\\" Year-Month should not be "
-"same."
-msgstr ""
-"L'année et le mois \\\"Premier\\\" et \\\"Second\\\" ne doivent pas être les "
-"mêmes."
+msgid "The \\\"First\\\" Year-Month and \\\"Second\\\" Year-Month should not be the same."
+msgstr "L'année et le mois \\\"Premier\\\" et \\\"Second\\\" ne doivent pas être les mêmes."
 
 #: includes/wsm_statistics.php:1385
 msgid "The \\\"From\\\" date OR \\\"To\\\" date should not be blank."
 msgstr "Le date \\\"Depuis\\\" OU \\\"Jusqu'à\\\" ne doit pas être vide."
 
 #: includes/wsm_statistics.php:1387 includes/wsm_statistics.php:1419
-msgid "The \\\"From\\\" Year and \\\"To\\\" Year should not be same."
-msgstr ""
-"L'année \\\"Depuis\\\" et \\\"Jusqu'à\\\" ne doivent pas être les mêmes."
+msgid "The \\\"From\\\" Year and \\\"To\\\" Year should not be the same."
+msgstr "L'année \\\"Depuis\\\" et \\\"Jusqu'à\\\" ne doivent pas être les mêmes."
 
 #: includes/wsm_statistics.php:1403
-msgid ""
-"The \\\"From\\\" Year-Month and \\\"To\\\" Year-Month should not be same."
-msgstr ""
-"L'année et le mois \\\"Depuis\\\" et \\\"Jusqu'à\\\" ne doivent pas être les "
-"mêmes."
+msgid "The \\\"From\\\" Year-Month and \\\"To\\\" Year-Month should not be the same."
+msgstr "L'année et le mois \\\"Depuis\\\" et \\\"Jusqu'à\\\" ne doivent pas être les mêmes."
 
 #. Description of the plugin
 msgid ""
@@ -972,29 +941,29 @@ msgid "Today"
 msgstr "Aujourd'hui"
 
 #: includes/wsm_init.php:1274
-msgid "Today Browser Stats"
+msgid "Today's Browser Stats"
 msgstr "Statistiques navigateur du jour"
 
 #: includes/wsm_init.php:1277 includes/wsm_init.php:1496
 #: includes/wsm_init.php:1511 includes/wsm_admin_interface.php:554
-msgid "Today Cities Stats"
+msgid "Today's City Stats"
 msgstr "Statistiques du jour par ville"
 
 #: includes/wsm_init.php:1495 includes/wsm_init.php:1510
 #: includes/wsm_admin_interface.php:553
-msgid "Today Countries Stats"
+msgid "Today's Country Stats"
 msgstr "Statistiques du jour par pays"
 
 #: includes/wsm_init.php:1270
-msgid "Today Search Engines"
+msgid "Today's Search Engines"
 msgstr "Statistiques moteurs de recherche du jour"
 
 #: includes/wsm_init.php:1268
-msgid "Today Stats"
+msgid "Today's Stats"
 msgstr "Statistiques du jour"
 
 #: includes/wsm_init.php:1256 includes/wsm_init.php:1257
-msgid "Top 10 countries"
+msgid "Top 10 Countries"
 msgstr "Top 10 des pays"
 
 #: includes/wsm_init.php:1401 includes/wsm_init.php:1402
@@ -1063,22 +1032,19 @@ msgid "Upgrade to Pro"
 msgstr "Passer en version Pro"
 
 #: includes/wsm_statistics.php:4127
-msgid "Url"
+msgid "URL"
 msgstr "URL"
 
 #: includes/wsm_init.php:1461 includes/wsm_init.php:1462
 msgid "URL Stats"
 msgstr "Statistiques des URL"
 
-#: includes/wsm_statistics.php:102
-msgid "User Online"
-msgstr "Utilisateur(s) en ligne"
-
 #: includes/wsm_init.php:837 includes/wsm_init.php:1279
 #: includes/wsm_init.php:1498 includes/wsm_init.php:1513
 #: includes/wsm_admin_interface.php:87 includes/wsm_admin_interface.php:158
 #: includes/wsm_admin_interface.php:168 includes/wsm_admin_interface.php:556
 #: includes/wsm_statistics.php:77
+#: includes/wsm_statistics.php:102
 msgid "Users Online"
 msgstr "Utilisateurs en ligne"
 
@@ -1121,14 +1087,8 @@ msgid "Visitors Performance"
 msgstr "Performance visiteurs"
 
 #: notifications.php:142
-msgid ""
-"We hope you've enjoyed using Visitor Statistics :) Would you mind taking a "
-"few minutes to write a review on WordPress.org?<br>Just writing simple "
-"\"thank you\" will make us happy!"
-msgstr ""
-"Nous espérons que vous appréciez Visitor Statistics :) Voudriez-vous bien "
-"prendre quelques minutes pour rédiger un avis sur WordPress.org?<br>Juste un "
-"simple \"merci\" fera notre joie!"
+msgid "We hope you've enjoyed using Visitor Statistics :) Would you mind taking a few minutes to write a review on WordPress.org?<br>Just writing a simple \"thank you\" will make us happy!"
+msgstr "Nous espérons que vous appréciez Visitor Statistics :) Voudriez-vous bien prendre quelques minutes pour rédiger un avis sur WordPress.org?<br>Juste un simple \"merci\" fera notre joie!"
 
 #: notifications.php:146
 msgid "Will Rate Later"
@@ -1151,9 +1111,9 @@ msgid "yesterday"
 msgstr "hier"
 
 #: includes/wsm_admin_interface.php:1037 includes/wsm_admin_interface.php:1048
-msgid "You can drag and drop widget here."
-msgstr "Vous pouvez glisser-déposer les gadgets ici"
+msgid "You can drag and drop widgets here."
+msgstr "Vous pouvez glisser-déposer les gadgets ici."
 
 #: includes/wsm_admin_interface.php:712
-msgid "You can set archive data setting for 30,60,90 or 180 day."
-msgstr "Vous pouvez choisir d’archiver les données à 30, 60, 90 ou 180 jours."
+msgid "Archive data older than 30, 60, 90 or 180 days."
+msgstr "Archiver les données de plus de 30, 60, 90 ou 180 jours."

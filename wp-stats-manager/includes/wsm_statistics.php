@@ -14,6 +14,7 @@ class wsmStatistics
         add_shortcode(WSM_PREFIX . '_showDayStats', array($this, WSM_PREFIX . '_showDayStats'));
         add_shortcode(WSM_PREFIX . '_showDayStatBox', array($this, WSM_PREFIX . '_showDayStatBox'));
         add_shortcode(WSM_PREFIX . '_showGenStats', array($this, WSM_PREFIX . '_showGenStats'));
+        add_shortcode(WSM_PREFIX . '_showSiteStats', array($this, WSM_PREFIX . '_showSiteStats'));
         add_shortcode(WSM_PREFIX . '_showLastDaysStats', array($this, WSM_PREFIX . '_showLastDaysStats'));
         add_shortcode(WSM_PREFIX . '_showForeCast', array($this, WSM_PREFIX . '_showForeCast'));
         add_shortcode(WSM_PREFIX . '_showGeoLocation', array($this, WSM_PREFIX . '_showGeoLocation'));
@@ -98,6 +99,36 @@ class wsmStatistics
         $wsmAdminJavaScript .= 'arrLiveStats.push(\'' . WSM_PREFIX . 'TodayTotalPageViews\',\'' . WSM_PREFIX . 'TodayTotalVisitors\',\'' . WSM_PREFIX . 'TodayTotalFirstVisitors\',\'' . WSM_PREFIX . 'TodayOnlineUsers\');';
         return wsmInitPlugin::wsm_strip_tags($html);
     }
+    /**
+     * Site totals boxes (Users Online / Total Page Views / Total Visitors / Total Unique Visitors), shown at the
+     * top of every plugin page and refreshed by wsmFnSiteLiveStats (action liveSiteStats). Same as Pro.
+     */
+    function wsm_showSiteStats($atts, $content = "")
+    {
+        global $wsmAdminJavaScript;
+        add_action('wp_footer', array('wsmInitPlugin', WSM_PREFIX . '_commonScript'));
+        if (!current_user_can('manage_options')) {
+            return 'You do not have permission to view this content.'; // Display message or return empty
+        }
+        $atts = shortcode_atts(array(
+            'title' => __('Total Stats', 'wp-stats-manager'),
+        ), $atts, WSM_PREFIX . '_showSiteStats');
+
+        $onlineVisitors = esc_html(number_format_i18n($this->objDatabase->fnGetTotalVisitorsCount('Online'), 0));
+        $totalPageViews = esc_html(number_format_i18n($this->objDatabase->fnGetTotalPageViewCount(), 0));
+        $totalVisitors = esc_html(number_format_i18n($this->objDatabase->fnGetTotalVisitorsCount(), 0));
+        $totalUniqueVisitors = esc_html(number_format_i18n($this->objDatabase->fnGetFirstTimeVisitorCount(), 0));
+
+        // No link on the online count: the "Users Online" report is a Pro feature in this version.
+        $html = '<div class="site_stats_panel wsmMetaboxContainer"><ul class="wsmUL wsmSiteStats">
+        <li><div class="box_widget greenBox"><div class="wsmCounters wsmPushRight"><span class="wsmH2Number">' . $onlineVisitors . '</span><span id="' . WSM_PREFIX . 'SiteUserOnline" class="wsmBoxUPDdataTIP" data-value="' . $onlineVisitors . '"></span></div><span class="text"><label><span class="wsmOnlineIcon"></span>' . esc_html__('Users Online', 'wp-stats-manager') . '</label></span></div></li>
+        <li><div class="box_widget blueBox"><div class="wsmCounters wsmPushRight"><span class="wsmH2Number">' . $totalPageViews . '</span><span id="' . WSM_PREFIX . 'SiteTotalPageViews" class="wsmBoxUPDdataTIP" data-value="' . $totalPageViews . '"></span></div><span class="text"><label>' . esc_html__('Total Page Views', 'wp-stats-manager') . '</label></span></div></li>
+        <li><div class="box_widget redBox"><div class="wsmCounters wsmPushRight"><span class="wsmH2Number">' . $totalVisitors . '</span><span id="' . WSM_PREFIX . 'SiteTotalVisitors" class="wsmBoxUPDdataTIP" data-value="' . $totalVisitors . '"></span></div><span class="text"><label>' . esc_html__('Total Visitors', 'wp-stats-manager') . '</label></span></div></li>
+        <li><div class="box_widget pinkBox"><div class="wsmCounters wsmPushRight"><span class="wsmH2Number">' . $totalUniqueVisitors . '</span><span id="' . WSM_PREFIX . 'SiteTotalFirstVisitors" class="wsmBoxUPDdataTIP" data-value="' . $totalUniqueVisitors . '"></span></div><span class="text"><label>' . esc_html__('Total Unique Visitors', 'wp-stats-manager') . '</label></span></div></li>
+        </ul></div>';
+        $wsmAdminJavaScript .= 'arrLiveStats.push(\'' . WSM_PREFIX . 'SiteTotalPageViews\',\'' . WSM_PREFIX . 'SiteTotalVisitors\',\'' . WSM_PREFIX . 'SiteUserOnline\',\'' . WSM_PREFIX . 'SiteTotalFirstVisitors\');';
+        return $html;
+    }
     function wsm_showGenStats($atts, $content = "")
     {
         global $wsmAdminJavaScript;
@@ -123,7 +154,7 @@ class wsmStatistics
         $pageViews = number_format_i18n($pageViews, 2);
         $onlineVisitors = number_format_i18n($onlineVisitors, 0);
         $html = '<ul class="wsmUL wsmGenStats">
-		<li class="greenTxt" style="display:none"><label>' . __('User Online', 'wp-stats-manager') . '</label><div class="wsmCounters wsmPushRight"><span id="' . WSM_PREFIX . 'GenUserOnline" class="wsmBoxUPDdataTIP" data-value="' . $onlineVisitors . '"></span><span class="wsmH2Number">' . $onlineVisitors . '</span></div></li>
+		<li class="greenTxt" style="display:none"><label>' . __('Users Online', 'wp-stats-manager') . '</label><div class="wsmCounters wsmPushRight"><span id="' . WSM_PREFIX . 'GenUserOnline" class="wsmBoxUPDdataTIP" data-value="' . $onlineVisitors . '"></span><span class="wsmH2Number">' . $onlineVisitors . '</span></div></li>
         <li><label>' . __('Total Page Views', 'wp-stats-manager') . '</label><div class="wsmCounters wsmPushRight"><span id="' . WSM_PREFIX . 'GenTotalPageViews" class="wsmBoxUPDdataTIP" data-value="' . $totalPageViews . '"></span><span class="wsmH2Number">' . $totalPageViews . '</span></div></li>
         <li><label>' . __('Total Visitors', 'wp-stats-manager') . '</label><div class="wsmCounters wsmPushRight"><span id="' . WSM_PREFIX . 'GenTotalVisitors" class="wsmBoxUPDdataTIP"  data-value="' . $totalVisitors . '"></span><span class="wsmH2Number">' . $totalVisitors . '</span></div></li>
         <li><label>' . __('Page Views Per Visit', 'wp-stats-manager') . '</label><div class="wsmCounters wsmPushRight"><span class="wsmH2Number">' . $pageViews . '</span></div></li>
@@ -142,29 +173,44 @@ class wsmStatistics
         }
         $atts = shortcode_atts(array(
             'title' => esc_html(__('Today', 'wp-stats-manager')),
-            'days' => ''
+            'days' => '',
+            'filter' => ''
         ), $atts, WSM_PREFIX . '_showLastDaysStats');
 
-        $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
-        $nDays = $atts['days'];
-        if ($nDays == '' || $nDays < 1) {
-            $oDays = get_option(WSM_PREFIX . 'ChartDays');
-            $nDays = ($oDays != '' && $oDays > 0) ? $oDays : 60;
+        $filterHtml = '';
+        if ($atts['filter'] === 'yes') {
+            // Summary box: the numbers follow the period filter (default "Last 7 Days").
+            $period = wsmGetDefaultChartDays();
+            list($condition, $args) = wsmChartDaysCondition($period);
+            $totalPageViews = $this->objDatabase->fnGetTotalPageViewCount($condition, $args);
+            $totalVisitors = $this->objDatabase->fnGetTotalVisitorsCount($condition, $args);
+            $firstTimeVisitors = $this->objDatabase->fnGetFirstTimeVisitorCount($condition, $args);
+            $filterHtml = '<div class="wsmDaysFilterBar"><select class="wsm_days_filter">';
+            foreach (wsmGetChartDaysChoices() as $key => $label) {
+                $filterHtml .= '<option value="' . esc_attr($key) . '"' . ((string) $key === $period ? ' selected="selected"' : '') . '>' . esc_html($label) . '</option>';
+            }
+            $filterHtml .= '</select></div>';
+        } else {
+            $nDays = $atts['days'];
+            if ($nDays == '' || $nDays < 1) {
+                $oDays = get_option(WSM_PREFIX . 'ChartDays');
+                $nDays = ($oDays != '' && $oDays > 0) ? $oDays : 60;
+            }
+            $totalPageViews = $this->objDatabase->fnGetTotalPageViewCount($nDays);
+            $totalVisitors = $this->objDatabase->fnGetTotalVisitorsCount($nDays);
+            $firstTimeVisitors = $this->objDatabase->fnGetFirstTimeVisitorCount($nDays);
         }
-        $totalPageViews = $this->objDatabase->fnGetTotalPageViewCount($nDays);
-        $totalVisitors = $this->objDatabase->fnGetTotalVisitorsCount($nDays);
-        $firstTimeVisitors = $this->objDatabase->fnGetFirstTimeVisitorCount($nDays);
         $pageViews = 0;
         if ($totalPageViews > 0 && $totalVisitors > 0) {
             $pageViews = ($totalPageViews / $totalVisitors);
         }
-        $html = '<ul class="wsmUL wsmLast2months">
+        $html = $filterHtml . '<ul class="wsmUL wsmLast2months">
         <li><div class="wsmH2Number"><span class="wsmH2Number">' . number_format_i18n($totalPageViews, 0) . '</span><span id="' . WSM_PREFIX . 'LastMonthsTotalPageViews" class="wsmBoxUPDdataTIP" data-value="' . $totalPageViews . '"></span></div><label>' . __('Page Views', 'wp-stats-manager') . '</label></li>
         <li><div class="wsmH2Number"><span class="wsmH2Number">' . number_format_i18n($totalVisitors, 0) . '</span><span id="' . WSM_PREFIX . 'LastMonthsTotalVisitors" class="wsmBoxUPDdataTIP" data-value="' . $totalVisitors . '"></div><label>' . __('Visitors', 'wp-stats-manager') . '</label></li>
         <li><div class="wsmH2Number"><span class="wsmH2Number">' . number_format_i18n($firstTimeVisitors, 0) . '</span><span id="' . WSM_PREFIX . 'LastMonthsTotalFirstVisitors" class="wsmBoxUPDdataTIP"  data-value="' . $firstTimeVisitors . '"></span></div><label>' . __('First Time Visitors', 'wp-stats-manager') . '</label></li>
-        <li><div class="wsmH2Number">' . number_format_i18n($pageViews, 2) . '</div><label>' . __('Page Views Per Visit', 'wp-stats-manager') . '</label></li>
+        <li><div class="wsmH2Number"><span class="wsmH2Number">' . number_format_i18n($pageViews, 2) . '</span><span id="' . WSM_PREFIX . 'LastMonthsTotalPagePerViews" class="wsmBoxUPDdataTIP" data-value="' . number_format($pageViews, 2, '.', '') . '"></span></div><label>' . __('Page Views Per Visit', 'wp-stats-manager') . '</label></li>
         </ul>';
-        $wsmAdminJavaScript .= 'arrLiveStats.push(\'' . WSM_PREFIX . 'LastMonthsTotalPageViews\',\'' . WSM_PREFIX . 'LastMonthsTotalVisitors\',\'' . WSM_PREFIX . 'LastMonthsTotalFirstVisitors\');';
+        $wsmAdminJavaScript .= 'arrLiveStats.push(\'' . WSM_PREFIX . 'LastMonthsTotalPageViews\',\'' . WSM_PREFIX . 'LastMonthsTotalVisitors\',\'' . WSM_PREFIX . 'LastMonthsTotalFirstVisitors\',\'' . WSM_PREFIX . 'LastMonthsTotalPagePerViews\');';
         return wsmInitPlugin::wsm_strip_tags($html);
     }
 
@@ -220,8 +266,8 @@ class wsmStatistics
         $html = '<div class="wsmForeCast">
 <div class="wsmForecastHeader">' . esc_html(__($atts['title'], 'wp-stats-manager')) . '</div>
         <ul class="wsmUL">
-        <li><div class="wsmLeftBlock"><label>' . __('Current Hour', 'wp-stats-manager') . '</label><div class="wsmH2Number">' . number_format_i18n($hourVisitors, 0) . '</div><label>' . __('Visitors', 'wp-stats-manager') . '</label></div><div class="wsmRightBlock"><div class="wsmTop"><span class="wsmH2Number ' . $hours7Class . '">' . number_format_i18n($hours7Change, 2) . '%</span><span class="wsmLabel">' . __('than 7 days ago', 'wp-stats-manager') . '</span></div><div class="wsmBottom"><span class="wsmH2Number ' . $hours14Class . '">' . number_format_i18n($hours14Change, 2) . '%</span><span>' . __('than 14 days ago', 'wp-stats-manager') . '</span></div></div></li>
-        <li><div class="wsmLeftBlock"><label>' . __('Current Day', 'wp-stats-manager') . '</label><div class="wsmH2Number">' . number_format_i18n($todayVisitors, 0) . '</div><label>' . __('Visitors', 'wp-stats-manager') . '</label></div><div class="wsmRightBlock"><div class="wsmTop"><span class="wsmH2Number ' . $day7Class . '">' . number_format_i18n($day7Change, 2) . '%</span><span class="wsmLabel">' . __('than 7 days ago', 'wp-stats-manager') . '</span></div><div class="wsmBottom"><span class="wsmH2Number ' . $day14Class . '">' . number_format_i18n($day14Change, 2) . '%</span><span>' . __('than 14 days ago', 'wp-stats-manager') . '</span></div></div></li>
+        <li><div class="wsmLeftBlock"><label>' . __('Current Hour', 'wp-stats-manager') . '</label><div class="wsmH2Number">' . number_format_i18n($hourVisitors, 0) . '</div><label>' . __('Visitors', 'wp-stats-manager') . '</label></div><div class="wsmRightBlock"><div class="wsmTop"><span class="wsmH2Number ' . $hours7Class . '">' . number_format_i18n($hours7Change, 2) . '%</span><span class="wsmLabel">' . __('vs. 7 days ago', 'wp-stats-manager') . '</span></div><div class="wsmBottom"><span class="wsmH2Number ' . $hours14Class . '">' . number_format_i18n($hours14Change, 2) . '%</span><span>' . __('vs. 14 days ago', 'wp-stats-manager') . '</span></div></div></li>
+        <li><div class="wsmLeftBlock"><label>' . __('Current Day', 'wp-stats-manager') . '</label><div class="wsmH2Number">' . number_format_i18n($todayVisitors, 0) . '</div><label>' . __('Visitors', 'wp-stats-manager') . '</label></div><div class="wsmRightBlock"><div class="wsmTop"><span class="wsmH2Number ' . $day7Class . '">' . number_format_i18n($day7Change, 2) . '%</span><span class="wsmLabel">' . __('vs. 7 days ago', 'wp-stats-manager') . '</span></div><div class="wsmBottom"><span class="wsmH2Number ' . $day14Class . '">' . number_format_i18n($day14Change, 2) . '%</span><span>' . __('vs. 14 days ago', 'wp-stats-manager') . '</span></div></div></li>
         </ul>
         </div>';
         return wsmInitPlugin::wsm_strip_tags($html);
@@ -337,8 +383,8 @@ class wsmStatistics
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         // Sanitize attributes to prevent XSS
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']); // Allow only alphanumeric, underscore, and hyphen
-        $atts['width'] = esc_attr($atts['width']); // Escape width attribute
-        $atts['height'] = esc_attr($atts['height']); // Escape height attribute
+        $atts['width'] = wsmFnSanitizeCssSize($atts['width'], '1140px'); // used inside inline JS
+        $atts['height'] = wsmFnSanitizeCssSize($atts['height'], '400px'); // used inside inline JS
 
 
 
@@ -464,6 +510,11 @@ class wsmStatistics
         var topButtons=jQuery('#{$atts['id']}').siblings('.wsmTopChartBar').find('.wsmButton');
         topButtons.on('click',function(e){
         e.preventDefault();
+        // Average Online is a Pro feature: open the upgrade popup, keep the current chart.
+        if(jQuery(this).data('chart')==='Online'){
+        if(typeof wsm_upgrade_to_pro==='function'){ wsm_upgrade_to_pro(); }
+        return;
+        }
         jQuery(this).siblings().removeClass('active');
         chart=jQuery(this).data('chart');
         nLabels=legendLabels.slice();
@@ -475,7 +526,7 @@ class wsmStatistics
         numberColumns=4;
         switch(chart){
         case 'Bounce':
-        nLabels.push('" . __('Bounce Rate(%)', 'wp-stats-manager') . "');
+        nLabels.push('" . __('Bounce Rate (%)', 'wp-stats-manager') . "');
         seriesData.push({$atts['id']}_bounceRate);
         break;
         case 'Ppv':
@@ -571,15 +622,17 @@ class wsmStatistics
             'title' => esc_html(__('Get Current Stats', 'wp-stats-manager')),
             'id' => 'lastDaysChart',
             'width' => '1140px',
-            'height' => '400px'
+            'height' => '400px',
+            'filter' => ''
         ), $atts, WSM_PREFIX . '_showLastDaysStatsChart');
+        $withFilter = $atts['filter'] === 'yes';
 		
 		
 		    // SECURE: sanitize incoming shortcode values
 		$atts['id']     = sanitize_key($atts['id']);
 		$atts['title']  = sanitize_text_field($atts['title']);
-		$atts['width']  = sanitize_text_field($atts['width']);
-		$atts['height'] = sanitize_text_field($atts['height']);
+		$atts['width']  = wsmFnSanitizeCssSize($atts['width'], '1140px'); // used inside inline JS
+		$atts['height'] = wsmFnSanitizeCssSize($atts['height'], '400px'); // used inside inline JS
 		$atts['days']   = intval($atts['days']);
 		
 		
@@ -591,7 +644,13 @@ class wsmStatistics
         if ($atts['days'] > 35) {
             $tDays = 3;
         }
-        $arrLineData = $this->objDatabase->fnGetHistoricalDayStatsByDays($atts['days']);
+        if ($withFilter) {
+            // Summary box: the chart shows the filter period (wsm_days_filter, default "Last 7 Days").
+            $arrLineData = wsmFnLastDaysChartData($this->objDatabase, wsmGetDefaultChartDays());
+            $tDays = (int) $arrLineData['tickInterval'];
+        } else {
+            $arrLineData = $this->objDatabase->fnGetHistoricalDayStatsByDays($atts['days']);
+        }
         $yArray = array('visitors' => array(), 'pageViews' => array(), 'firstTimeVisitors' => array());
         $todaysVisitors = array_slice($arrLineData['visitors'], -8, 7);
 
@@ -713,7 +772,7 @@ class wsmStatistics
         bSeriesData={$atts['id']}_arrLineData.slice();
         switch(bchart){
         case 'Bounce':
-        nBLabels.push('" . __('Bounce Rate(%)', 'wp-stats-manager') . "');
+        nBLabels.push('" . __('Bounce Rate (%)', 'wp-stats-manager') . "');
         bSeriesData.push({$atts['id']}_bBounce);
         break;
         case 'Ppv':
@@ -748,13 +807,49 @@ class wsmStatistics
                var tI = {$atts['id']}_legendIndex.indexOf(jQuery(this).index());
                 if(tI==-1){
                     {$atts['id']}_legendIndex.push(jQuery(this).index());
-                }else{ 
+                }else{
                     {$atts['id']}_legendIndex.splice(tI, 1);
                 }
             }
         });
-        
+
         ";
+        if ($withFilter) {
+            // Period filter of the Summary box: new series + totals from action wsmLastDaysChart.
+            $wsmAdminJavaScript .= "
+        var {$safeId}_applyData=function(d){
+            {$safeId}_bpageViews=d.pageViews; {$safeId}_bvisitors=d.visitors; {$safeId}_bfirstVisitors=d.firstTimeVisitors;
+            {$safeId}_bBounce=d.Bounce; {$safeId}_bppv=d.ppv; {$safeId}_bnewVisitor=d.newVisitor; {$safeId}_bavgOnline=d.avgOnline;
+            {$safeId}_arrLineData=[{$safeId}_bfirstVisitors,{$safeId}_bvisitors,{$safeId}_bpageViews];
+            {$safeId}_bOptions.axes.xaxis.numberTicks=Math.max(1,d.pageViews.length);
+            {$safeId}_bOptions.axes.xaxis.tickInterval=d.tickInterval;
+            var active=jQuery('#{$safeId}').siblings('.wsmTopChartBar').find('.wsmButton.active');
+            if(active.length){
+                active.trigger('click');
+            }else{
+                jQuery('#{$safeId}').empty();
+                plot_{$safeId}=jQuery.jqplot('{$safeId}',{$safeId}_arrLineData,{$safeId}_bOptions);
+                wsmMoveLegend(jQuery('#{$safeId}').parents('.postbox'));
+            }
+        };
+        var {$safeId}_filterReq=null;
+        jQuery(document).on('change','.wsm_days_filter',function(){
+            var sel=jQuery(this);
+            jQuery('#" . WSM_PREFIX . "_lastDaysBox h2.hndle').first().text(sel.find('option:selected').text());
+            jQuery('#{$safeId}').css('opacity',0.4);
+            if({$safeId}_filterReq){ {$safeId}_filterReq.abort(); }
+            {$safeId}_filterReq=jQuery.ajax({url:wsm_ajaxObject.ajax_url,type:'POST',dataType:'json',data:{action:'" . WSM_PREFIX . "LastDaysChart',days_filter:sel.val()}})
+            .done(function(r){
+                if(!r||!r.success||!r.data){ return; }
+                {$safeId}_applyData(r.data.chart);
+                jQuery.each(r.data.totals,function(id,v){
+                    jQuery('#'+id).attr('data-value',v).hide().siblings('.wsmH2Number').text(v);
+                });
+            })
+            .always(function(){ {$safeId}_filterReq=null; jQuery('#{$safeId}').css('opacity',1); });
+        });
+        ";
+        }
         return wsmInitPlugin::wsm_strip_tags($html);
     }
     function wsm_showRecentVisitedPages($atts, $content = "")
@@ -1119,7 +1214,7 @@ class wsmStatistics
 		
 		
         if (is_null($googleMapAPI) || $googleMapAPI == '') {
-            echo '<br><br>&nbsp;<i>' . __('Please enter map API key (check the settings page for more details)', 'wp-stats-manager') . '</i><br><br>';
+            echo '<br><br>&nbsp;<i>' . __('Please enter a map API key (see the Settings page for details)', 'wp-stats-manager') . '</i><br><br>';
         } else {
             $subJs = '';
             $arrJSMarkers = array();
@@ -1347,13 +1442,13 @@ class wsmStatistics
         if (!in_array('Hourly', $arrHide)) {
             $html .= '<div class="wsmHourly">';
             $html .= '<div class="wsmNormal wsmHide">';
-            $html .= '<div id="wsmShowCalendarNormal" class="wsmInlineBlock"></div><input type="hidden" Placeholder="yyyy-mm-dd" class="wsmTextBox" name="' . WSM_PREFIX . 'TxtHourlyNormalDate" id="' . WSM_PREFIX . 'TxtHourlyNormalDate" value="' . $arrPostData[WSM_PREFIX . 'TxtHourlyNormalDate'] . '"/>';
+            $html .= '<div id="wsmShowCalendarNormal" class="wsmInlineBlock"></div><input type="hidden" Placeholder="yyyy-mm-dd" class="wsmTextBox" name="' . WSM_PREFIX . 'TxtHourlyNormalDate" id="' . WSM_PREFIX . 'TxtHourlyNormalDate" value="' . esc_attr($arrPostData[WSM_PREFIX . 'TxtHourlyNormalDate']) . '"/>';
             $html .= '</div>';
             $html .= '<div class="wsmRange wsmHide">';
-            $html .= '<table class="wsmWidth100p"><tr><td><div>' . __('From', 'wp-stats-manager') . ':&nbsp;</div><div id="wsmShowCalendarFrom"></div><input type="hidden" Placeholder="yyyy-mm-dd" name="' . WSM_PREFIX . 'TxtHourlyRangeFromDate" id="' . WSM_PREFIX . 'TxtHourlyRangeFromDate" value="' . $arrPostData[WSM_PREFIX . 'TxtHourlyRangeFromDate'] . '"/></td><td><div>' . __('To', 'wp-stats-manager') . ':&nbsp;</div><div id="wsmShowCalendarTo"></div><input type="hidden" Placeholder="yyyy-mm-dd" name="' . WSM_PREFIX . 'TxtHourlyRangeToDate" id="' . WSM_PREFIX . 'TxtHourlyRangeToDate" value="' . $arrPostData[WSM_PREFIX . 'TxtHourlyRangeToDate'] . '"/></td></tr></table>';
+            $html .= '<table class="wsmWidth100p"><tr><td><div>' . __('From', 'wp-stats-manager') . ':&nbsp;</div><div id="wsmShowCalendarFrom"></div><input type="hidden" Placeholder="yyyy-mm-dd" name="' . WSM_PREFIX . 'TxtHourlyRangeFromDate" id="' . WSM_PREFIX . 'TxtHourlyRangeFromDate" value="' . esc_attr($arrPostData[WSM_PREFIX . 'TxtHourlyRangeFromDate']) . '"/></td><td><div>' . __('To', 'wp-stats-manager') . ':&nbsp;</div><div id="wsmShowCalendarTo"></div><input type="hidden" Placeholder="yyyy-mm-dd" name="' . WSM_PREFIX . 'TxtHourlyRangeToDate" id="' . WSM_PREFIX . 'TxtHourlyRangeToDate" value="' . esc_attr($arrPostData[WSM_PREFIX . 'TxtHourlyRangeToDate']) . '"/></td></tr></table>';
             $html .= '</div>';
             $html .= '<div class="wsmCompare wsmHide">';
-            $html .= '<table class="wsmWidth100p"><tr><td><div>' . __('First', 'wp-stats-manager') . ':&nbsp;</div><div id="wsmShowCalendarFirst"></div><input type="hidden" Placeholder="yyyy-mm-dd" class="wsmTextBox" name="' . WSM_PREFIX . 'TxtHourlyCompareFirstDate" id="' . WSM_PREFIX . 'TxtHourlyCompareFirstDate" value="' . $arrPostData[WSM_PREFIX . 'TxtHourlyCompareFirstDate'] . '"/></td><td><div>' . __('Second', 'wp-stats-manager') . ':&nbsp;</div><div id="wsmShowCalendarSecond"></div><input type="hidden" class="wsmTextBox" Placeholder="yyyy-mm-dd" name="' . WSM_PREFIX . 'TxtHourlyCompareSecondDate" id="' . WSM_PREFIX . 'TxtHourlyCompareSecondDate" value="' . $arrPostData[WSM_PREFIX . 'TxtHourlyCompareSecondDate'] . '"/></td></tr></table>';
+            $html .= '<table class="wsmWidth100p"><tr><td><div>' . __('First', 'wp-stats-manager') . ':&nbsp;</div><div id="wsmShowCalendarFirst"></div><input type="hidden" Placeholder="yyyy-mm-dd" class="wsmTextBox" name="' . WSM_PREFIX . 'TxtHourlyCompareFirstDate" id="' . WSM_PREFIX . 'TxtHourlyCompareFirstDate" value="' . esc_attr($arrPostData[WSM_PREFIX . 'TxtHourlyCompareFirstDate']) . '"/></td><td><div>' . __('Second', 'wp-stats-manager') . ':&nbsp;</div><div id="wsmShowCalendarSecond"></div><input type="hidden" class="wsmTextBox" Placeholder="yyyy-mm-dd" name="' . WSM_PREFIX . 'TxtHourlyCompareSecondDate" id="' . WSM_PREFIX . 'TxtHourlyCompareSecondDate" value="' . esc_attr($arrPostData[WSM_PREFIX . 'TxtHourlyCompareSecondDate']) . '"/></td></tr></table>';
             $html .= '</div>';
             $html .= '</div>';
         }
@@ -1425,7 +1520,7 @@ class wsmStatistics
         //$html.='</form>';
         $html .= '</div>';
         $wsmAdminJavaScript .= '
-        jQuery("#' . WSM_PREFIX . '_' . $atts['id'] . ' .' . WSM_PREFIX . $arrPostData[WSM_PREFIX . 'FilterType'] . ' .' . WSM_PREFIX . $arrPostData[WSM_PREFIX . 'FilterWay'] . '").removeClass("wsmHide");
+        jQuery("#' . WSM_PREFIX . '_' . $atts['id'] . ' .' . WSM_PREFIX . esc_js($arrPostData[WSM_PREFIX . 'FilterType']) . ' .' . WSM_PREFIX . esc_js($arrPostData[WSM_PREFIX . 'FilterWay']) . '").removeClass("wsmHide");
         var wsmDateFormat="yy-mm-dd";
         function wsmGetDate( element ) {
             var date;
@@ -1440,7 +1535,7 @@ class wsmStatistics
             dateFormat:wsmDateFormat,
             altFormat:wsmDateFormat,
             altField: "#' . WSM_PREFIX . 'TxtHourlyNormalDate",
-            defaultDate:"' . $arrPostData[WSM_PREFIX . 'TxtHourlyNormalDate'] . '",
+            defaultDate:"' . esc_js($arrPostData[WSM_PREFIX . 'TxtHourlyNormalDate']) . '",
             changeMonth: true,
             changeYear: true,
             minDate:-30,
@@ -1454,7 +1549,7 @@ class wsmStatistics
             dateFormat:wsmDateFormat,
             altFormat:wsmDateFormat,
             altField: "#' . WSM_PREFIX . 'TxtHourlyRangeFromDate",
-            defaultDate:"' . $arrPostData[WSM_PREFIX . 'TxtHourlyRangeFromDate'] . '",
+            defaultDate:"' . esc_js($arrPostData[WSM_PREFIX . 'TxtHourlyRangeFromDate']) . '",
             changeMonth: true,
             changeYear: true,
             minDate:-30,
@@ -1469,7 +1564,7 @@ class wsmStatistics
             dateFormat:wsmDateFormat,
             altFormat:wsmDateFormat,
             altField: "#' . WSM_PREFIX . 'TxtHourlyRangeToDate",
-            defaultDate:"' . $arrPostData[WSM_PREFIX . 'TxtHourlyRangeToDate'] . '",
+            defaultDate:"' . esc_js($arrPostData[WSM_PREFIX . 'TxtHourlyRangeToDate']) . '",
             changeMonth: true,
             changeYear: true,
             minDate:-30,
@@ -1484,7 +1579,7 @@ class wsmStatistics
             dateFormat:wsmDateFormat,
             altFormat:wsmDateFormat,
             altField: "#' . WSM_PREFIX . 'TxtHourlyCompareFirstDate",
-            defaultDate:"' . $arrPostData[WSM_PREFIX . 'TxtHourlyCompareFirstDate'] . '",
+            defaultDate:"' . esc_js($arrPostData[WSM_PREFIX . 'TxtHourlyCompareFirstDate']) . '",
             changeMonth: true,
             changeYear: true,
             minDate:-' . $installDays . ',
@@ -1497,7 +1592,7 @@ class wsmStatistics
             dateFormat:wsmDateFormat,
             altFormat:wsmDateFormat,
             altField: "#' . WSM_PREFIX . 'TxtHourlyCompareSecondDate",
-            defaultDate:"' . $arrPostData[WSM_PREFIX . 'TxtHourlyCompareSecondDate'] . '",
+            defaultDate:"' . esc_js($arrPostData[WSM_PREFIX . 'TxtHourlyCompareSecondDate']) . '",
             changeMonth: true,
             changeYear: true,
             minDate:-' . $installDays . ',
@@ -1531,14 +1626,14 @@ class wsmStatistics
                         if(jQuery("#' . WSM_PREFIX . 'TxtHourlyCompareFirstDate").val()=="" || jQuery("#' . WSM_PREFIX . 'TxtHourlyCompareSecondDate").val()==""){
                             wsmError="' . __('The \"First\" date OR \"Second\" date should not be blank.', 'wp-stats-manager') . '";
                         }else if(jQuery("#' . WSM_PREFIX . 'TxtHourlyCompareFirstDate").val()==jQuery("#' . WSM_PREFIX . 'TxtHourlyCompareSecondDate").val()){
-                            wsmError="' . __('The \"First\" date and \"Second\" date should not be same.', 'wp-stats-manager') . '";
+                            wsmError="' . __('The \"First\" date and \"Second\" date should not be the same.', 'wp-stats-manager') . '";
                         }
                     }                    
                     if(radio=="Range"){                        
                         if(jQuery("#' . WSM_PREFIX . 'TxtHourlyRangeFromDate").val()=="" || jQuery("#' . WSM_PREFIX . 'TxtHourlyRangeToDate").val()==""){
                             wsmError="' . __('The \"From\" date OR \"To\" date should not be blank.', 'wp-stats-manager') . '";
                         }else if(jQuery("#' . WSM_PREFIX . 'TxtHourlyRangeFromDate").val()==jQuery("#' . WSM_PREFIX . 'TxtHourlyRangeToDate").val()){
-                            wsmError="' . __('The \"From\" Year and \"To\" Year should not be same.', 'wp-stats-manager') . '";
+                            wsmError="' . __('The \"From\" Year and \"To\" Year should not be the same.', 'wp-stats-manager') . '";
                         }
                     }
                 break;
@@ -1547,14 +1642,14 @@ class wsmStatistics
                          var fYM=jQuery("#' . WSM_PREFIX . 'SelectFirstYear").val()+" "+jQuery("#' . WSM_PREFIX . 'SelectFirstMonth").val();
                          var sYM=jQuery("#' . WSM_PREFIX . 'SelectSecondYear").val()+" "+jQuery("#' . WSM_PREFIX . 'SelectSecondMonth").val();
                         if(fYM==sYM){
-                            wsmError="' . __('The \"First\" Year-Month and \"Second\" Year-Month should not be same.', 'wp-stats-manager') . '";
+                            wsmError="' . __('The \"First\" Year-Month and \"Second\" Year-Month should not be the same.', 'wp-stats-manager') . '";
                         }
                     }
                     if(radio=="Range"){
                          var fYM=jQuery("#' . WSM_PREFIX . 'SelectFromYear").val()+" "+jQuery("#' . WSM_PREFIX . 'SelectFromMonth").val();
                          var sYM=jQuery("#' . WSM_PREFIX . 'SelectToYear").val()+" "+jQuery("#' . WSM_PREFIX . 'SelectToMonth").val();
                         if(fYM==sYM){
-                            wsmError="' . __('The \"From\" Year-Month and \"To\" Year-Month should not be same.', 'wp-stats-manager') . '";
+                            wsmError="' . __('The \"From\" Year-Month and \"To\" Year-Month should not be the same.', 'wp-stats-manager') . '";
                         }
                     }
                 break;
@@ -1563,14 +1658,14 @@ class wsmStatistics
                          var fY=jQuery("#' . WSM_PREFIX . 'SelectMonthlyFirstYear").val();
                          var sY=jQuery("#' . WSM_PREFIX . 'SelectMonthlySeondYear").val();
                         if(fY==sY){
-                            wsmError="' . __('The \"First\" Year and \"Second\" Year should not be same.', 'wp-stats-manager') . '";
+                            wsmError="' . __('The \"First\" Year and \"Second\" Year should not be the same.', 'wp-stats-manager') . '";
                         }
                     }
                     if(radio=="Range"){
                          var fY=jQuery("#' . WSM_PREFIX . 'SelectMonthlyFromYear").val();
                          var sY=jQuery("#' . WSM_PREFIX . 'SelectMonthlyToYear").val();
                         if(fY==sY){
-                            wsmError="' . __('The \"From\" Year and \"To\" Year should not be same.', 'wp-stats-manager') . '";
+                            wsmError="' . __('The \"From\" Year and \"To\" Year should not be the same.', 'wp-stats-manager') . '";
                         }
                     }
                 break;
@@ -2264,8 +2359,8 @@ class wsmStatistics
 
         $title = esc_html(__('Get Current Stats', 'wp-stats-manager'));
         $id = sanitize_key('barGrouped');
-        $width = sanitize_text_field($width);
-        $height = sanitize_text_field($height);
+        $width = ''; // was sanitize_text_field() of an undefined variable, i.e. always ''
+        $height = '';
         $type = sanitize_key($arrPostData['filterType']);
         $condition = sanitize_key($arrPostData['filterWay']);
         $from = sanitize_text_field($arrPostData[$condition]['from']);
@@ -2509,7 +2604,7 @@ class wsmStatistics
         numberColumns=4;
         switch(chart){
         case 'Bounce':
-        nLabels.push('" . __('Bounce Rate(%)', 'wp-stats-manager') . "');
+        nLabels.push('" . __('Bounce Rate (%)', 'wp-stats-manager') . "');
         seriesData.push({$atts['id']}_bounceRate);
         break;
         case 'Ppv':
@@ -2585,7 +2680,7 @@ class wsmStatistics
         $to = sanitize_text_field($arrPostData[$condition]['to']);
         $first = sanitize_text_field($arrPostData[$condition]['first']);
         $second = sanitize_text_field($arrPostData[$condition]['second']);
-        $searchengine = sanitize_text_field($searchengine);
+        $searchengine = '';
 
 
         if (!current_user_can('manage_options')) {
@@ -3036,7 +3131,7 @@ class wsmStatistics
 
         $arrReferrerList = array();
         $arrReferrerListSecond = array();
-        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? sanitize_text_field($_GET['wsmp']) : 1;
+        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? max(1, absint($_GET['wsmp'])) : 1;
         $arrAtts['currentPage'] = $currentPage;
         $html = '<div id="' . WSM_PREFIX . sanitize_key('_topRefferStatsList') . '">';
         switch ($atts['type']) {
@@ -3137,7 +3232,7 @@ class wsmStatistics
         $to = sanitize_text_field($arrPostData[$condition]['to']);
         $first = sanitize_text_field($arrPostData[$condition]['first']);
         $second = sanitize_text_field($arrPostData[$condition]['second']);
-        $searchengine = sanitize_text_field($searchengine);
+        $searchengine = '';
 
 
         if (!current_user_can('manage_options')) {
@@ -3159,7 +3254,7 @@ class wsmStatistics
         $arrReferrerList = array();
         $arrReferrerListSecond = array();
         $arrYesterDayReferrerList = array();
-        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? sanitize_text_field($_GET['wsmp']) : 1;
+        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? max(1, absint($_GET['wsmp'])) : 1;
         $arrAtts['currentPage'] = $currentPage;
         $arrAtts['searchengine'] = $atts['searchengine'];
         $arrAtts['adminURL'] = admin_url('admin.php?page=' . WSM_PREFIX . '_trafficsrc') . '&subPage=' . ($atts['searchengine'] ? 'SearchEngines' : 'RefSites') . '&' . http_build_query($arrRequestData);
@@ -3249,7 +3344,7 @@ class wsmStatistics
             $arrAtts['searchengine'] = '';
 
             $html .= '<table class="wsmTableStriped">';
-            $html .= '<tr><th>' . __('Rank', 'wp-stats-manager') . '</th><th>' . __('Referrer url', 'wp-stats-manager') . '</th><th>&nbsp;</th></tr>';
+            $html .= '<tr><th>' . __('Rank', 'wp-stats-manager') . '</th><th>' . __('Referrer URL', 'wp-stats-manager') . '</th><th>&nbsp;</th></tr>';
             foreach ($arrReferrerList['data'] as $referrer => $referrers) {
                 $totalReferrences = count($referrers);
                 $arrow = '';
@@ -3281,7 +3376,7 @@ class wsmStatistics
                         $class = "wsmColorGreen";
                         $percent = '+' . $percent;
                     }
-                    $toolTip = '<span class="wsmTooltipText">' . $referrers['refUrl'] . '<font class="wsmColorYellow">' . wsmGetDateByTimeStamp($format, strtotime($arrAtts['from'])) . '&nbsp;/&nbsp;' . wsmGetDateByTimeStamp($format, strtotime($lastFrom)) . '</font><font>' . __('Visitors Performance', 'wp-stats-manager') . ':&nbsp;<b class="' . $class . '">' . $percent . '%</b></font></span>';
+                    $toolTip = '<span class="wsmTooltipText">' . esc_html($referrers['refUrl']) . '<font class="wsmColorYellow">' . wsmGetDateByTimeStamp($format, strtotime($arrAtts['from'])) . '&nbsp;/&nbsp;' . wsmGetDateByTimeStamp($format, strtotime($lastFrom)) . '</font><font>' . __('Visitors Performance', 'wp-stats-manager') . ':&nbsp;<b class="' . $class . '">' . $percent . '%</b></font></span>';
                 }
                 if ($atts['condition'] == 'Compare') {
                     $arrCompare['refUrl'] = $referrers['refUrl'];
@@ -3295,9 +3390,11 @@ class wsmStatistics
                 $referrerUrlDetail['id'] = $referrers['id'];
                 $referrerUrlDetail['action'] = 'refUrlDetails';
 
-                $html .= '<tr id="wsmRowParent_' . $counter . '" class="wsmReferralRow" data-url="' . $referrers['refUrl'] . '">';
+                // SECURITY: refUrl / keyword come from the public tracker (the keyword is URL-decoded
+                // in wsmGetSearchKeywords()), so escape them for each output context.
+                $html .= '<tr id="wsmRowParent_' . intval($counter) . '" class="wsmReferralRow" data-url="' . esc_attr($referrers['refUrl']) . '">';
                 $kTitle = (isset($referrers['keyword']) && $referrers['keyword'] != ''  && $referrers['keyword'] != '-') ? $referrers['keyword'] : $referrers['refUrl'];
-                $html .= '<td><div  class="wsmTooltip">' . $arrow . '&nbsp;' . $counter . $toolTip . '</div></td><td><a title="click to open" target="_blank" rel="nofollow" href="' . $kTitle . '">' . $kTitle . '</a></td><td width="15"><a href="#" class="" data-referral_prg=\'' . (json_encode($jsParamAarray)) . '\'></a></td><td></td>';
+                $html .= '<td><div  class="wsmTooltip">' . $arrow . '&nbsp;' . intval($counter) . $toolTip . '</div></td><td><a title="click to open" target="_blank" rel="nofollow" href="' . esc_url($kTitle) . '">' . esc_html($kTitle) . '</a></td><td width="15"><a href="#" class="" data-referral_prg="' . esc_attr(wp_json_encode($jsParamAarray)) . '"></a></td><td></td>';
                 $html .= '</tr>';
                 $counter++;
             }
@@ -3375,7 +3472,7 @@ class wsmStatistics
             'second' =>  $arrPostData[$arrPostData['filterWay']]['second'],
 			'searchengine' => ''
         ), $atts, WSM_PREFIX.'_showTopReferrerList');
-        $currentPage=isset($_GET['wsmp'])&&$_GET['wsmp']!=''?sanitize_text_field($_GET['wsmp']):1;
+        $currentPage=isset($_GET['wsmp'])&&$_GET['wsmp']!=''?max(1, absint($_GET['wsmp'])):1;
         $arrAtts['currentPage']=$currentPage;        
       	$arrAtts['searchengine'] = $atts['searchengine']; 
 		$condition=$atts['condition'];
@@ -3477,7 +3574,7 @@ class wsmStatistics
         $to = sanitize_text_field($arrPostData[$condition]['to']);
         $first = sanitize_text_field($arrPostData[$condition]['first']);
         $second = sanitize_text_field($arrPostData[$condition]['second']);
-        $searchengine = sanitize_text_field($searchengine);
+        $searchengine = '';
 
 
         if (!current_user_can('manage_options')) {
@@ -3497,7 +3594,7 @@ class wsmStatistics
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 
 
-        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? sanitize_text_field($_GET['wsmp']) : 1;
+        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? max(1, absint($_GET['wsmp'])) : 1;
         $arrAtts['currentPage'] = $currentPage;
         $arrAtts['searchengine'] = $atts['searchengine'];
         $condition = $atts['condition'];
@@ -3626,11 +3723,11 @@ class wsmStatistics
 
                         $arrAtts['action'] = 'getReferralOSDetails';
 
-                        $contentData .= '<tr id="wsmRowParent_' . esc_attr($counter) . '" class="wsmReferralRow"><td><div class="wsmTooltip">' . $arrow . '&nbsp;' . $counter . $toolTip . '</div></td><td>' . $row['name'] . '</td><td></td><td>' . number_format($row['total']) . $compareValue . '</td></tr>';
+                        $contentData .= '<tr id="wsmRowParent_' . esc_attr($counter) . '" class="wsmReferralRow"><td><div class="wsmTooltip">' . $arrow . '&nbsp;' . $counter . $toolTip . '</div></td><td>' . esc_html($row['name']) . '</td><td></td><td>' . number_format($row['total']) . $compareValue . '</td></tr>';
 
                         $counter++;
                         if ($counter <= 8) {
-                            $visitor_graph[] = array($row['name'] . ' (' . $row['total'] . ')', $row['total']);
+                            $visitor_graph[] = wsmFnGraphPoint($row['name'], $row['total']);
                         }
                     }
                 } else {
@@ -3639,7 +3736,7 @@ class wsmStatistics
                 $contentData .= '</table>';
                 $contentData .= '</div>';
 
-                $header .= $seperator . '<a class="' . esc_attr($link_class) . '" 1=\'' . json_encode($visitor_graph) . '\' href="#vistor_panel_' . esc_attr($unique_id) . '">' . esc_html($key) . '</a>';
+                $header .= $seperator . '<a class="' . esc_attr($link_class) . '" 1="' . wsmFnGraphAttr($visitor_graph) . '" href="#vistor_panel_' . esc_attr($unique_id) . '">' . esc_html($key) . '</a>';
                 $link_class = '';
                 $seperator = ' | ';
             }
@@ -3677,7 +3774,7 @@ class wsmStatistics
             'second' =>  $arrPostData[$arrPostData['filterWay']]['second'],
 			'searchengine' => ''
         ), $atts, WSM_PREFIX.'_showTopReferrerList');
-        $currentPage=isset($_GET['wsmp'])&&$_GET['wsmp']!=''?sanitize_text_field($_GET['wsmp']):1;
+        $currentPage=isset($_GET['wsmp'])&&$_GET['wsmp']!=''?max(1, absint($_GET['wsmp'])):1;
         $arrAtts['currentPage']=$currentPage;        
       	$arrAtts['searchengine'] = $atts['searchengine']; 
 		$condition=$atts['condition'];
@@ -3866,7 +3963,7 @@ class wsmStatistics
         $to = sanitize_text_field($arrPostData[$condition]['to']);
         $first = sanitize_text_field($arrPostData[$condition]['first']);
         $second = sanitize_text_field($arrPostData[$condition]['second']);
-        $searchengine = sanitize_text_field($searchengine);
+        $searchengine = '';
 
 
         if (!current_user_can('manage_options')) {
@@ -3885,7 +3982,7 @@ class wsmStatistics
         ), $atts, WSM_PREFIX . '_showTopReferrerList');
 
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
-        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? sanitize_text_field($_GET['wsmp']) : 1;
+        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? max(1, absint($_GET['wsmp'])) : 1;
         $arrAtts['currentPage'] = $currentPage;
         $arrAtts['searchengine'] = $atts['searchengine'];
         $condition = $atts['condition'];
@@ -3946,7 +4043,7 @@ class wsmStatistics
                         $name  = isset($row['name']) ? $row['name'] : '';
                         $total = isset($row['total']) ? (int) $row['total'] : 0;
                         if ($counter <= 8) {
-                            $visitor_graph[] = array($name . ' (' . $total . ')', $total);
+                            $visitor_graph[] = wsmFnGraphPoint($name, $total);
                         }
                         $counter++;
                     }
@@ -3954,7 +4051,9 @@ class wsmStatistics
 
                 // One tab per category; the first one is active and is what the
                 // graph container renders on load (see custom_admin.js).
-                $header .= $seperator . '<a class="' . esc_attr($link_class) . '" data-graph=\'' . json_encode($visitor_graph) . '\' href="#vistor_panel_' . esc_attr($key) . '">' . esc_html($key) . '</a>';
+                // Every part is escaped here, so this markup is not passed through
+                // wsm_strip_tags() (which no longer allows data-graph).
+                $header .= $seperator . '<a class="' . esc_attr($link_class) . '" data-graph="' . wsmFnGraphAttr($visitor_graph) . '" href="#vistor_panel_' . esc_attr($key) . '">' . esc_html($key) . '</a>';
                 $link_class = '';
                 $seperator  = ' | ';
             }
@@ -3962,7 +4061,7 @@ class wsmStatistics
 
         ob_start();
         if ($header !== '') {
-            echo '<div class="stats_submenu">' . wsmInitPlugin::wsm_strip_tags($header) . '</div>';
+            echo '<div class="stats_submenu">' . $header . '</div>';
             echo '<div id="visitor_info_graph"></div>';
         } else {
             echo '<div id="visitor_info_graph"><p class="wsmCenter">' . __('Data / Statistics are not available.', 'wp-stats-manager') . '</p></div>';
@@ -3979,7 +4078,7 @@ class wsmStatistics
             return 'You do not have permission to view this content.'; // Display message or return empty
         }
         $arrRequestData = wsmFnGetFilterPostData();
-        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? sanitize_text_field($_GET['wsmp']) : 1;
+        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? max(1, absint($_GET['wsmp'])) : 1;
         $arrAtts['currentPage'] = $currentPage;
         if (current_user_can('edit_others_pages')) {
             $arrAtts['adminURL'] = admin_url('admin.php?page=' . WSM_PREFIX . '_trafficsrc') . '&subPage=SearchKeywords'; //'&'.http_build_query($arrRequestData);
@@ -4138,12 +4237,12 @@ class wsmStatistics
                 if ($condition == 'Compare') {
                     $total += $totalGeoLocationDetails2[$key]['total_visitors'];
                 }
-                $visitor_graph[] = array($row['name'] . ' (' . $total . ')', number_format($total));
+                $visitor_graph[] = wsmFnGraphPoint($row['name'], $total);
             }
-            echo '<div id="country_visitor_info_graph" data-graph=\'' . json_encode($visitor_graph) . '\'></div>';
+            echo '<div id="country_visitor_info_graph" data-graph="' . wsmFnGraphAttr($visitor_graph) . '"></div>';
         } else {
             $visitor_graph = null;
-            echo '<div id="country_visitor_info_graph" data-graph=\'' . json_encode($visitor_graph) . '\'><p class="wsmCenter">' . __('Data / Statistics are not available.', 'wp-stats-manager') . '</p></div>';
+            echo '<div id="country_visitor_info_graph" data-graph="' . wsmFnGraphAttr($visitor_graph) . '"><p class="wsmCenter">' . __('Data / Statistics are not available.', 'wp-stats-manager') . '</p></div>';
         }
 
 
@@ -4435,7 +4534,7 @@ class wsmStatistics
 
         $arrAtts = array();
 
-        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? sanitize_text_field($_GET['wsmp']) : 1;
+        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? max(1, absint($_GET['wsmp'])) : 1;
         $arrAtts['currentPage'] = $currentPage;
         if (current_user_can('edit_others_pages')) {
             $arrAtts['adminURL'] = admin_url('admin.php?page=' . WSM_PREFIX . '_content'); //'&'.http_build_query($arrRequestData);
@@ -4612,7 +4711,7 @@ class wsmStatistics
         }
         $arrAtts = array();
 
-        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? sanitize_text_field($_GET['wsmp']) : 1;
+        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? max(1, absint($_GET['wsmp'])) : 1;
         $arrAtts['currentPage'] = $currentPage;
         if (isset($_REQUEST['search']) && $_REQUEST['search']) {
             $arrAtts['search'] = sanitize_text_field($_REQUEST['search']);
@@ -4721,7 +4820,7 @@ class wsmStatistics
                 $order_query = $arrAtts['adminURL'] . '&orderby=hits&order=desc';
                 $order_class = 'dashicons-arrow-up';
             }
-            $urlTitle = __('Url', 'wp-stats-manager');
+            $urlTitle = __('URL', 'wp-stats-manager');
             if (isset($_GET['subPage']) && $_GET['subPage'] == 'byTitle') {
                 $urlTitle = __('Title', 'wp-stats-manager');
             }
@@ -4922,7 +5021,7 @@ class wsmStatistics
 
         $arrAtts = array();
 
-        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? sanitize_text_field($_GET['wsmp']) : 1;
+        $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? max(1, absint($_GET['wsmp'])) : 1;
         $arrAtts['currentPage'] = $currentPage;
 
         if (isset($_REQUEST['search']) && $_REQUEST['search']) {
@@ -5117,12 +5216,13 @@ class wsmStatistics
         $html .= '<div class="update_message"></div>';
         $html .= '<input type="text" name="ipadress" id="ipadress" value="" placeholder="000.000.000.000" />';
         $html .= '<input type="hidden" name="action" value="save_ipadress" />';
+        $html .= '<input type="hidden" name="wsm_ip_nonce" id="wsm_ip_nonce" value="' . esc_attr(wp_create_nonce('wsm_ip_exclusion')) . '" />';
         $html .= '<input type="button" id="save_ipadress" class="save_ipadress button button-primary" value="' . __('Save IP Address', 'wp-stats-manager') . '" />';
         $html .= '</div>';
         $html .= '<table id="tblIPList" class="wsmTableStriped">';
         $html .= '<tr>';
         $html .= '<th>' . __('No', 'wp-stats-manager') . '</th>';
-        $html .= '<th>' . __('I.P. Address', 'wp-stats-manager') . '</th>';
+        $html .= '<th>' . __('IP Address', 'wp-stats-manager') . '</th>';
         $html .= '<th>' . __('Status', 'wp-stats-manager') . '</th>';
         $html .= '<th>' . __('Action', 'wp-stats-manager') . '</th>';
         $html .= '</tr>';
