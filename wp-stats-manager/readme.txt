@@ -3,7 +3,7 @@ Contributors: osamaesh
 Tags: analytics, google analytics, insights, stats, visitors
 Requires at least: 5.0
 Tested up to: 7.1.2
-Stable tag: 8.8
+Stable tag: 8.9
 License: GPL3
 
 This plugin will help you to track your visitors & visits, browsers, operating systems, GEO locations and much more, easy to install and working fine.
@@ -81,6 +81,9 @@ Thanks!
 
 
 == Changelog ==
+
+= 8.9 =
+Security: Fixed authenticated (Contributor+) SQL Injection via the 'from', 'to', 'first' and 'second' date attributes of the statistics shortcodes (CVE-2026-116609). Shortcode date attributes are now validated against a strict date format, and the hourly / daily / monthly report queries use prepared statements
 
 = 8.8 =
 New: "Visitors by Country" map preview on the Traffic > Summary page, below the "Last 7 Days" box (Today, 7 days, 30 days, All time, Online now) - a Pro feature, shown with sample data

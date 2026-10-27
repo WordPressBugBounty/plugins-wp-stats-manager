@@ -1442,18 +1442,33 @@ class wsmDatabase
         $time = $this->wsmDB->get_var($sqlQuery);
         return $time;
     }
+    // Report name: '' (summary tables) or one of the names the report function knows.
+    function fnIsValidReportName($name, $allowed)
+    {
+        return $name === '' || in_array($name, $allowed, true);
+    }
+    // Time zone offset as returned by wsmCurrentGetTimezoneOffset() ("+03:00"), or '' when not used.
+    function fnIsValidTimeZoneOffset($offset)
+    {
+        return $offset === '' || (is_string($offset) && preg_match('/^[+-]\d{2}:\d{2}$/', $offset));
+    }
     function fnGetHourlyReportByDateNameTimeZone($date, $name = '', $newTimeZone = '')
     {
+        // SECURITY: $date can come from a shortcode attribute: only a real Y-m-d date, a known report
+        // name and a "+hh:mm" offset are accepted, and every value goes through prepare().
+        if (!wsmIsStrictDate($date, 'Y-m-d') || !$this->fnIsValidReportName($name, array('hourWisePageViews', 'hourWiseBounce', 'hourWiseVisitors', 'hourWiseFirstVisitors', 'hourWiseBounceRate')) || !$this->fnIsValidTimeZoneOffset($newTimeZone)) {
+            return false;
+        }
 
         if (empty($name)) {
-            $sqlQuery = 'SELECT hour, total_page_views, total_visitors, total_first_time_visitors, total_bounce FROM ' . $this->tablePrefix . '_datewise_report WHERE hour > 0 AND date = "' . $date . '" ORDER BY hour ASC';
+            $sqlQuery = $this->wsmDB->prepare('SELECT hour, total_page_views, total_visitors, total_first_time_visitors, total_bounce FROM ' . $this->tablePrefix . '_datewise_report WHERE hour > 0 AND date = %s ORDER BY hour ASC', $date);
             $result = $this->wsmDB->get_results($sqlQuery, ARRAY_A);
             if ($result) {
                 return $result;
             }
         }
 
-        $sqlQuery = 'SELECT * FROM ' . $this->tablePrefix . '_dailyHourlyReport WHERE name="' . $name . '" AND reportDate="' . $date . '" AND timezone="' . $newTimeZone . '"';
+        $sqlQuery = $this->wsmDB->prepare('SELECT * FROM ' . $this->tablePrefix . '_dailyHourlyReport WHERE name=%s AND reportDate=%s AND timezone=%s', $name, $date, $newTimeZone);
         $result = $this->wsmDB->get_row($sqlQuery, ARRAY_A);
         $startDateTime = $date . ' 00:00:00';
         $endDateTime = $date . ' 23:59:59';
@@ -1470,19 +1485,20 @@ class wsmDatabase
             }
         }
         $sql = '';
+        // The offset was validated above ("+hh:mm"), the dates go through prepare().
         switch ($name) {
             case 'hourWisePageViews':
-                $sql = "SELECT HOUR({$visitLastActionTime}) as hour, SUM(totalViews) as pageViews FROM " . $this->tablePrefix . "_pageViews WHERE {$visitLastActionTime} >= '" . $startDateTime . "' AND {$visitLastActionTime} <= '" . $endDateTime . "' GROUP BY HOUR({$visitLastActionTime})";
+                $sql = $this->wsmDB->prepare("SELECT HOUR({$visitLastActionTime}) as hour, SUM(totalViews) as pageViews FROM " . $this->tablePrefix . "_pageViews WHERE {$visitLastActionTime} >= %s AND {$visitLastActionTime} <= %s GROUP BY HOUR({$visitLastActionTime})", $startDateTime, $endDateTime);
                 break;
             case 'hourWiseBounce':
-                $sql = "SELECT HOUR({$visitLastActionTime}) as hour, COUNT(*) as bounce FROM " . $this->tablePrefix . "_bounceVisits WHERE {$visitLastActionTime} >= '" . $startDateTime . "' AND {$visitLastActionTime} <= '" . $endDateTime . "' GROUP BY HOUR({$visitLastActionTime})";
+                $sql = $this->wsmDB->prepare("SELECT HOUR({$visitLastActionTime}) as hour, COUNT(*) as bounce FROM " . $this->tablePrefix . "_bounceVisits WHERE {$visitLastActionTime} >= %s AND {$visitLastActionTime} <= %s GROUP BY HOUR({$visitLastActionTime})", $startDateTime, $endDateTime);
                 break;
             case 'hourWiseVisitors':
-                $sql = "SELECT HOUR({$visitLastActionTime}) as hour, COUNT(*) as visitors FROM " . $this->tablePrefix . "_logUniqueVisit WHERE {$visitLastActionTime} >= '" . $startDateTime . "' AND {$visitLastActionTime} <= '" . $endDateTime . "' GROUP BY HOUR({$visitLastActionTime})";
+                $sql = $this->wsmDB->prepare("SELECT HOUR({$visitLastActionTime}) as hour, COUNT(*) as visitors FROM " . $this->tablePrefix . "_logUniqueVisit WHERE {$visitLastActionTime} >= %s AND {$visitLastActionTime} <= %s GROUP BY HOUR({$visitLastActionTime})", $startDateTime, $endDateTime);
                 break;
             case 'hourWiseFirstVisitors':
                 $firstVisitTime = "CONVERT_TZ(firstVisitTime,'+00:00','" . $newTimeZone . "')";
-                $sql = "SELECT HOUR({$firstVisitTime}) as hour, COUNT(*) as visitors FROM " . $this->tablePrefix . "_uniqueVisitors WHERE {$firstVisitTime} >= '" . $startDateTime . "' AND {$firstVisitTime} <= '" . $endDateTime . "' GROUP BY HOUR({$firstVisitTime})";
+                $sql = $this->wsmDB->prepare("SELECT HOUR({$firstVisitTime}) as hour, COUNT(*) as visitors FROM " . $this->tablePrefix . "_uniqueVisitors WHERE {$firstVisitTime} >= %s AND {$firstVisitTime} <= %s GROUP BY HOUR({$firstVisitTime})", $startDateTime, $endDateTime);
                 break;
             case 'hourWiseBounceRate':
                 $sql = "SELECT hwb.hour, hwb.bounce, hwp.pageViews, hwv.visitors, ((hwb.bounce/hwp.pageViews)*100) AS bRatePageViews, ((hwb.bounce/hwv.visitors)*100) AS bRateVisitors FROM " . $this->tablePrefix . "_hourWiseBounce hwb LEFT JOIN " . $this->tablePrefix . "_hourWisePageViews hwp ON hwb.hour=hwp.hour LEFT JOIN " . $this->tablePrefix . "_hourWiseVisitors hwv ON hwb.hour=hwv.hour";
@@ -1493,9 +1509,9 @@ class wsmDatabase
             if ($this->wsmDB->num_rows > 0) {
                 $sResult = serialize($newResult);
                 if ($action == 'update' && $updateId != 0) {
-                    $newSql = "UPDATE {$this->tablePrefix}_dailyHourlyReport SET content='{$sResult}' WHERE id={$updateId}";
+                    $newSql = $this->wsmDB->prepare("UPDATE {$this->tablePrefix}_dailyHourlyReport SET content=%s WHERE id=%d", $sResult, $updateId);
                 } else {
-                    $newSql = "INSERT INTO {$this->tablePrefix}_dailyHourlyReport (name, reportDate, content, timezone) VALUES ('{$name}','{$date}','{$sResult}','{$newTimeZone}')";
+                    $newSql = $this->wsmDB->prepare("INSERT INTO {$this->tablePrefix}_dailyHourlyReport (name, reportDate, content, timezone) VALUES (%s,%s,%s,%s)", $name, $date, $sResult, $newTimeZone);
                     $this->fnLogError();
                 }
                 $this->wsmDB->query($newSql);
@@ -1625,14 +1641,18 @@ class wsmDatabase
     }
     function fnGetMonthlyReportByYearNameTimeZone($year, $name = '', $newTimeZone = '')
     {
+        // SECURITY: $year can come from a shortcode attribute: see fnGetHourlyReportByDateNameTimeZone().
+        if (!wsmIsStrictDate($year, 'Y') || !$this->fnIsValidReportName($name, array('monthWiseVisitors', 'monthWisePageViews', 'monthWiseFirstVisitors', 'monthWiseBounceRate')) || !$this->fnIsValidTimeZoneOffset($newTimeZone)) {
+            return false;
+        }
 
-        $sqlQuery = 'SELECT DATE_FORMAT( date, "%c" ) AS month, total_page_views, total_visitors, total_first_time_visitors, total_bounce FROM ' . $this->tablePrefix . '_monthwise_report WHERE normal = 1 AND YEAR(date) = ' . $year . ' ORDER BY date ASC';
+        $sqlQuery = $this->wsmDB->prepare('SELECT DATE_FORMAT( date, "%%c" ) AS month, total_page_views, total_visitors, total_first_time_visitors, total_bounce FROM ' . $this->tablePrefix . '_monthwise_report WHERE normal = 1 AND YEAR(date) = %d ORDER BY date ASC', $year);
         $result = $this->wsmDB->get_results($sqlQuery, ARRAY_A);
         if ($result) {
             return $result;
         }
 
-        $sqlQuery = 'SELECT * FROM ' . $this->tablePrefix . '_yearlyMonthlyReport WHERE name="' . $name . '" AND reportYear="' . $year . '" AND timezone="' . $newTimeZone . '"';
+        $sqlQuery = $this->wsmDB->prepare('SELECT * FROM ' . $this->tablePrefix . '_yearlyMonthlyReport WHERE name=%s AND reportYear=%s AND timezone=%s', $name, $year, $newTimeZone);
         $result = $this->wsmDB->get_row($sqlQuery, ARRAY_A);
         $currentDate = wsmGetCurrentDateByTimeZone('Y-m-d');
         $arrDate = explode('-', $currentDate);
@@ -1654,7 +1674,7 @@ class wsmDatabase
         }
         if (count($arrResult) > 0) {
             $sResult = serialize($arrResult);
-            $newSql = "INSERT INTO {$this->tablePrefix}_yearlyMonthlyReport (name, reportYear, content, timezone) VALUES ('{$name}','{$year}','{$sResult}','{$newTimeZone}')";
+            $newSql = $this->wsmDB->prepare("INSERT INTO {$this->tablePrefix}_yearlyMonthlyReport (name, reportYear, content, timezone) VALUES (%s,%s,%s,%s)", $name, $year, $sResult, $newTimeZone);
             $this->wsmDB->query($newSql);
             $this->fnLogError();
             return $arrResult;
@@ -1723,14 +1743,18 @@ class wsmDatabase
     }
     function fnGetDailyReportByMonthNameTimeZone($yearMonth, $name = '', $newTimeZone = '')
     {
+        // SECURITY: $yearMonth can come from a shortcode attribute: see fnGetHourlyReportByDateNameTimeZone().
+        if (!wsmIsStrictDate($yearMonth, 'Y-m') || !$this->fnIsValidReportName($name, array('dayWisePageViews', 'dayWiseVisitors', 'dayWiseFirstVisitors', 'dayWiseBounceRate')) || !$this->fnIsValidTimeZoneOffset($newTimeZone)) {
+            return false;
+        }
 
         if (empty($name)) {
-            $sqlQuery = 'SELECT dr.`date`, dr.total_page_views, dr.total_visitors, dr.total_first_time_visitors, dr.total_bounce FROM ' . $this->tablePrefix . '_monthwise_report AS dr WHERE date_format(dr.date,"%Y-%m") = "' . $yearMonth . '"  AND dr.hour > 0';
+            $sqlQuery = $this->wsmDB->prepare('SELECT dr.`date`, dr.total_page_views, dr.total_visitors, dr.total_first_time_visitors, dr.total_bounce FROM ' . $this->tablePrefix . '_monthwise_report AS dr WHERE date_format(dr.date,"%%Y-%%m") = %s  AND dr.hour > 0', $yearMonth);
             $result = $this->wsmDB->get_results($sqlQuery, ARRAY_A);
             if ($result) {
                 return $result;
             } else {
-                $sqlQuery = 'SELECT dr.`date`, sum(dr.total_page_views) AS total_page_views , sum(dr.total_visitors) AS total_visitors, sum(dr.total_first_time_visitors) AS total_first_time_visitors , sum(dr.total_bounce) AS total_bounce FROM ' . $this->tablePrefix . '_datewise_report AS dr WHERE date_format(dr.date,"%Y-%m") = "' . $yearMonth . '"  AND dr.hour > 0 GROUP BY dr.date';
+                $sqlQuery = $this->wsmDB->prepare('SELECT dr.`date`, sum(dr.total_page_views) AS total_page_views , sum(dr.total_visitors) AS total_visitors, sum(dr.total_first_time_visitors) AS total_first_time_visitors , sum(dr.total_bounce) AS total_bounce FROM ' . $this->tablePrefix . '_datewise_report AS dr WHERE date_format(dr.date,"%%Y-%%m") = %s  AND dr.hour > 0 GROUP BY dr.date', $yearMonth);
                 $result = $this->wsmDB->get_results($sqlQuery, ARRAY_A);
                 if ($result) {
                     return $result;
@@ -1738,7 +1762,7 @@ class wsmDatabase
             }
         }
 
-        $sqlQuery = 'SELECT * FROM ' . $this->tablePrefix . '_monthlyDailyReport WHERE name="' . $name . '" AND reportMonthYear="' . $yearMonth . '" AND timezone="' . $newTimeZone . '"';
+        $sqlQuery = $this->wsmDB->prepare('SELECT * FROM ' . $this->tablePrefix . '_monthlyDailyReport WHERE name=%s AND reportMonthYear=%s AND timezone=%s', $name, $yearMonth, $newTimeZone);
         $result = $this->wsmDB->get_row($sqlQuery, ARRAY_A);
         $startDateTime = $yearMonth . '-01';
         $requestedMonthEnd = wsmGetDateByTimeStamp('Y-m-t', strtotime($startDateTime));
@@ -1757,19 +1781,19 @@ class wsmDatabase
         $columnName = '';
         switch ($name) {
             case 'dayWisePageViews':
-                $sql = "SELECT recordDate, pageViews FROM {$this->tablePrefix}_dateWisePageViews WHERE recordDate >= '" . $startDateTime . "' AND recordDate<='" . $endDateTime . "'";
+                $sql = $this->wsmDB->prepare("SELECT recordDate, pageViews FROM {$this->tablePrefix}_dateWisePageViews WHERE recordDate >= %s AND recordDate<=%s", $startDateTime, $endDateTime);
                 $columnName = 'pageViews';
                 break;
             case 'dayWiseVisitors':
-                $sql = "SELECT recordDate, visitors FROM {$this->tablePrefix}_dateWiseVisitors WHERE recordDate >= '" . $startDateTime . "' AND recordDate<='" . $endDateTime . "'";
+                $sql = $this->wsmDB->prepare("SELECT recordDate, visitors FROM {$this->tablePrefix}_dateWiseVisitors WHERE recordDate >= %s AND recordDate<=%s", $startDateTime, $endDateTime);
                 $columnName = 'visitors';
                 break;
             case 'dayWiseFirstVisitors':
-                $sql = "SELECT recordDate, visitors FROM {$this->tablePrefix}_dateWiseFirstVisitors WHERE 1 AND recordDate >= '" . $startDateTime . "' AND recordDate<='" . $endDateTime . "'";
+                $sql = $this->wsmDB->prepare("SELECT recordDate, visitors FROM {$this->tablePrefix}_dateWiseFirstVisitors WHERE 1 AND recordDate >= %s AND recordDate<=%s", $startDateTime, $endDateTime);
                 $columnName = 'visitors';
                 break;
             case 'dayWiseBounceRate':
-                $sql = "SELECT recordDate, bRateVisitors FROM {$this->tablePrefix}_dateWiseBounceRate WHERE 1 AND recordDate >= '" . $startDateTime . "' AND recordDate<='" . $endDateTime . "'";
+                $sql = $this->wsmDB->prepare("SELECT recordDate, bRateVisitors FROM {$this->tablePrefix}_dateWiseBounceRate WHERE 1 AND recordDate >= %s AND recordDate<=%s", $startDateTime, $endDateTime);
                 $columnName = 'bRateVisitors';
                 break;
         }
@@ -1787,7 +1811,7 @@ class wsmDatabase
                 }
                 $sResult = serialize($retArray);
                 if ($requestedMonthEnd != $currentMonthEnd) {
-                    $newSql = "INSERT INTO {$this->tablePrefix}_monthlyDailyReport (name, reportMonthYear, content, timezone) VALUES ('{$name}','{$yearMonth}','{$sResult}','{$newTimeZone}')";
+                    $newSql = $this->wsmDB->prepare("INSERT INTO {$this->tablePrefix}_monthlyDailyReport (name, reportMonthYear, content, timezone) VALUES (%s,%s,%s,%s)", $name, $yearMonth, $sResult, $newTimeZone);
                     $this->wsmDB->query($newSql);
                     $this->fnLogError();
                 }

@@ -3086,6 +3086,42 @@ function wsmIsValidFilterValue($key,$value){
     }
     return false;
 }
+/**
+ * True when $value is a real date written exactly in $format ('Y-m-d', 'Y-m' or 'Y').
+ * Report queries only accept values that pass this check.
+ */
+function wsmIsStrictDate($value, $format = 'Y-m-d'){
+    $patterns = array('Y-m-d' => '/^\d{4}-\d{2}-\d{2}$/', 'Y-m' => '/^\d{4}-\d{2}$/', 'Y' => '/^\d{4}$/');
+    if(!is_scalar($value) || !isset($patterns[$format]) || !preg_match($patterns[$format], (string) $value)){
+        return false;
+    }
+    $date = DateTime::createFromFormat('!' . $format, (string) $value);
+    return $date && $date->format($format) === (string) $value;
+}
+/**
+ * SECURITY: shortcode attributes are written by post authors (Contributor and up) and shortcode_atts()
+ * returns them unchanged. The 'from' / 'to' / 'first' / 'second' dates reach the report SQL, so each one
+ * must be empty or a real date in the format of the report type (Hourly: Y-m-d, Daily: Y-m, Monthly: Y).
+ * Anything else is replaced by its default (the validated filter form value). 'type' is not changed.
+ */
+function wsmSanitizeStatsDateAtts($atts, $defaults = array()){
+    $formats = array('hourly' => 'Y-m-d', 'daily' => 'Y-m', 'monthly' => 'Y');
+    $type = (isset($atts['type']) && is_string($atts['type'])) ? strtolower($atts['type']) : '';
+    $format = isset($formats[$type]) ? $formats[$type] : 'Y-m-d';
+    foreach(array('from', 'to', 'first', 'second') as $key){
+        if(!array_key_exists($key, $atts)){
+            continue;
+        }
+        $value = is_scalar($atts[$key]) ? trim((string) $atts[$key]) : '';
+        if($value === '' || wsmIsStrictDate($value, $format)){
+            $atts[$key] = $value;
+            continue;
+        }
+        $default = (isset($defaults[$key]) && is_scalar($defaults[$key])) ? (string) $defaults[$key] : '';
+        $atts[$key] = ($default !== '' && wsmIsStrictDate($default, $format)) ? $default : '';
+    }
+    return $atts;
+}
 function wsmSanitizeFilteredPostData($hide=''){
     global $arrCashedStats;
     $arrPostData=wsmFnGetFilterPostData();    

@@ -1727,6 +1727,7 @@ class wsmStatistics
             'first' => $first,
             'second' => $second
         ), $atts, WSM_PREFIX . '_showDayStatBox');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
 
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 
@@ -1987,6 +1988,7 @@ class wsmStatistics
             'first' => $first,
             'second' => $second
         ), $atts, WSM_PREFIX . '_showTrafficStatsList');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
 
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 
@@ -2384,6 +2386,7 @@ class wsmStatistics
             'first' => $first,
             'second' => $second
         ), $atts, WSM_PREFIX . '_showCurrentStats');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
 
         $atts['id']        = preg_replace( '/[^a-zA-Z0-9_\-]/', '', $atts['id'] );
         $atts['title']     = sanitize_text_field( $atts['title'] );
@@ -2697,6 +2700,7 @@ class wsmStatistics
             'second' => $second,
             'searchengine' => $searchengine
         ), $atts, WSM_PREFIX . '_showRefferStatsBox');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
 
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $pageViews = $visitors = $firstTimeVisitors = $pvpv = 0;
@@ -3126,6 +3130,7 @@ class wsmStatistics
             'first' => $first,
             'second' => $second
         ), $atts, WSM_PREFIX . '_showTopReferrerList');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
 
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 
@@ -3249,6 +3254,7 @@ class wsmStatistics
             'second' => $second,
             'searchengine' => $searchengine
         ), $atts, WSM_PREFIX . '_showTopReferrerList');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
 
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $arrReferrerList = array();
@@ -3591,6 +3597,7 @@ class wsmStatistics
             'second' => $second,
             'searchengine' => $searchengine
         ), $atts, WSM_PREFIX . '_showTopReferrerList');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 
 
@@ -3980,6 +3987,7 @@ class wsmStatistics
             'second' => $second,
             'searchengine' => $searchengine
         ), $atts, WSM_PREFIX . '_showTopReferrerList');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
 
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $currentPage = isset($_GET['wsmp']) && $_GET['wsmp'] != '' ? max(1, absint($_GET['wsmp'])) : 1;
@@ -4162,6 +4170,7 @@ class wsmStatistics
             'first' => $first,
             'second' => $second,
         ), $atts, WSM_PREFIX . '_showTopReferrerList');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
 
         $condition = $atts['condition'];
@@ -4297,6 +4306,7 @@ class wsmStatistics
             'first' => $first,
             'second' => $second,
         ), $atts, WSM_PREFIX . '_showTopReferrerList');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
 
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $condition = $atts['condition'];
@@ -4528,6 +4538,7 @@ class wsmStatistics
             'first' => $first,
             'second' => $second,
         ), $atts, WSM_PREFIX . '_showContentByURL');
+        $atts = wsmSanitizeStatsDateAtts($atts, array('from' => $from, 'to' => $to, 'first' => $first, 'second' => $second));
 
         $atts['id'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', $atts['id']);
         $condition = $atts['condition'];
